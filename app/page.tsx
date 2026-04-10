@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 const classes = [
@@ -13,13 +12,13 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-16">
       <div className="text-center mb-12 flex flex-col items-center gap-4">
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src="/school-logo.png"
           alt="בית ספר בן גוריון הרצליה"
           width={72}
           height={72}
-          className="object-contain"
-          style={{ filter: "brightness(0) invert(1)" }}
+          style={{ filter: "brightness(0) invert(1)", objectFit: "contain" }}
         />
         <div>
           <p className="text-sm text-muted-foreground mb-1 tracking-widest">
