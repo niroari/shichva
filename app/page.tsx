@@ -14,7 +14,7 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-16">
       <div className="text-center mb-12 flex flex-col items-center gap-4">
         <Image
-          src="https://bengurion-herzliya.mashov.info/wp-content/uploads/sites/225/2024/07/%D7%A9%D7%97%D7%95%D7%A8-lior-burshtein.png"
+          src="/school-logo.png"
           alt="בית ספר בן גוריון הרצליה"
           width={72}
           height={72}
