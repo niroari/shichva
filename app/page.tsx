@@ -28,16 +28,29 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-2xl">
-        {classes.map((cls) => (
-          <Link
-            key={cls.id}
-            href={`/${cls.id}`}
-            className="class-card flex items-center justify-center py-10 px-6 rounded-2xl text-xl font-bold text-foreground"
-          >
-            {cls.label}
-          </Link>
-        ))}
+      <div className="flex flex-col items-center gap-4 w-full max-w-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+          {classes.slice(0, 3).map((cls) => (
+            <Link
+              key={cls.id}
+              href={`/${cls.id}`}
+              className="class-card flex items-center justify-center py-10 px-6 rounded-2xl text-xl font-bold text-foreground"
+            >
+              {cls.label}
+            </Link>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full md:w-2/3">
+          {classes.slice(3).map((cls) => (
+            <Link
+              key={cls.id}
+              href={`/${cls.id}`}
+              className="class-card flex items-center justify-center py-10 px-6 rounded-2xl text-xl font-bold text-foreground"
+            >
+              {cls.label}
+            </Link>
+          ))}
+        </div>
       </div>
     </main>
   );
