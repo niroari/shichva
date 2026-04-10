@@ -49,8 +49,18 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  /* Site design tokens */
+  --bg-from: #1a1735;
+  --bg-mid: #221f4a;
+  --bg-to: #182040;
+  --card-bg: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-hover-bg: rgba(255, 255, 255, 0.1);
+  --card-hover-border: rgba(255, 255, 255, 0.2);
+
+  /* shadcn token overrides — dark purple theme */
+  --background: oklch(0.16 0.06 280);
+  --foreground: oklch(0.91 0.01 250);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -121,10 +131,15 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
+  html, body {
+    overflow-x: hidden;
   }
-  html {
-    @apply font-sans;
+  body {
+    @apply text-foreground min-h-screen;
+    background:
+      radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(160deg, var(--bg-from) 0%, var(--bg-mid) 50%, var(--bg-to) 100%);
+    background-size: 28px 28px, cover;
+    background-attachment: local, local;
   }
 }
