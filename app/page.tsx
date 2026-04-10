@@ -15,14 +15,14 @@ export default function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/school-logo.png"
-          alt="בית ספר בן גוריון הרצליה"
+          alt="חטיבת הביניים בן גוריון הרצליה"
           width={86}
           height={86}
           style={{ filter: "brightness(0) invert(1)", objectFit: "contain" }}
         />
         <div>
           <p className="text-sm text-muted-foreground mb-1 tracking-widest">
-            בית ספר בן גוריון הרצליה
+            חטיבת הביניים בן גוריון הרצליה
           </p>
           <h1 className="text-5xl font-bold text-foreground">שכבת ז׳</h1>
         </div>
