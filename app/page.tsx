@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const classes = [
@@ -11,11 +12,21 @@ const classes = [
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-16">
-      <div className="text-center mb-12">
-        <p className="text-sm text-muted-foreground mb-3 tracking-widest uppercase">
-          בית ספר בן גוריון הרצליה
-        </p>
-        <h1 className="text-5xl font-bold text-foreground">שכבת ז׳</h1>
+      <div className="text-center mb-12 flex flex-col items-center gap-4">
+        <Image
+          src="https://bengurion-herzliya.mashov.info/wp-content/uploads/sites/225/2024/07/%D7%A9%D7%97%D7%95%D7%A8-lior-burshtein.png"
+          alt="בית ספר בן גוריון הרצליה"
+          width={72}
+          height={72}
+          className="object-contain"
+          style={{ filter: "brightness(0) invert(1)" }}
+        />
+        <div>
+          <p className="text-sm text-muted-foreground mb-1 tracking-widest">
+            בית ספר בן גוריון הרצליה
+          </p>
+          <h1 className="text-5xl font-bold text-foreground">שכבת ז׳</h1>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-2xl">
@@ -23,7 +34,7 @@ export default function Home() {
           <Link
             key={cls.id}
             href={`/${cls.id}`}
-            className="flex items-center justify-center py-10 px-6 rounded-2xl text-xl font-bold text-foreground bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-200"
+            className="class-card flex items-center justify-center py-10 px-6 rounded-2xl text-xl font-bold text-foreground"
           >
             {cls.label}
           </Link>

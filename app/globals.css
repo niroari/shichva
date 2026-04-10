@@ -127,6 +127,32 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@layer components {
+  .class-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .class-card:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.22) 0%, rgba(59, 130, 246, 0.12) 100%);
+    border-color: rgba(139, 92, 246, 0.45);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.45),
+      0 0 28px rgba(139, 92, 246, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transform: translateY(-4px) scale(1.02);
+  }
+
+  .class-card:active {
+    transform: translateY(0) scale(0.97);
+    transition-duration: 0.1s;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
