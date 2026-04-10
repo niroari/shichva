@@ -16,8 +16,8 @@ export default function Home() {
         <img
           src="/school-logo.png"
           alt="בית ספר בן גוריון הרצליה"
-          width={72}
-          height={72}
+          width={86}
+          height={86}
           style={{ filter: "brightness(0) invert(1)", objectFit: "contain" }}
         />
         <div>
