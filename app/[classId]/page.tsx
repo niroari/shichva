@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import ClassNav from "@/components/class/ClassNav";
+import QuickLinks from "@/components/class/sections/QuickLinks";
 
 const classLabels: Record<string, string> = {
   kita1: "כיתה ז׳1",
@@ -52,6 +53,11 @@ export default async function ClassPage({
         <section id="seating" className="py-16 border-t border-white/10">
           <h2 className="text-2xl font-bold text-foreground mb-6">מקומות ישיבה</h2>
           <p className="text-muted-foreground">בקרוב...</p>
+        </section>
+
+        <section id="links" className="py-16 border-t border-white/10">
+          <h2 className="text-2xl font-bold text-foreground mb-6">קישורים חשובים</h2>
+          <QuickLinks />
         </section>
 
       </main>

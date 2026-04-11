@@ -8,6 +8,7 @@ const sections = [
   { id: "teachers", label: "מורים" },
   { id: "schedule", label: "מערכת שעות" },
   { id: "seating", label: "מקומות ישיבה" },
+  { id: "links", label: "קישורים" },
 ];
 
 function scrollTo(id: string) {
