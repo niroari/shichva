@@ -3,6 +3,7 @@ import ClassNav from "@/components/class/ClassNav";
 import Announcements from "@/components/class/sections/Announcements";
 import Schedule from "@/components/class/sections/Schedule";
 import Events from "@/components/class/sections/Events";
+import Seating from "@/components/class/sections/Seating";
 import QuickLinks from "@/components/class/sections/QuickLinks";
 
 const classLabels: Record<string, string> = {
@@ -48,13 +49,13 @@ export default async function ClassPage({
           <Events classId={classId} />
         </section>
 
-        <section id="teachers" className="py-16 border-t border-white/10">
-          <h2 className="text-2xl font-bold text-foreground mb-6">צוות המורים</h2>
-          <p className="text-muted-foreground">בקרוב...</p>
-        </section>
-
         <section id="seating" className="py-16 border-t border-white/10">
           <h2 className="text-2xl font-bold text-foreground mb-6">מקומות ישיבה</h2>
+          <Seating classId={classId} />
+        </section>
+
+        <section id="teachers" className="py-16 border-t border-white/10">
+          <h2 className="text-2xl font-bold text-foreground mb-6">צוות המורים</h2>
           <p className="text-muted-foreground">בקרוב...</p>
         </section>
 

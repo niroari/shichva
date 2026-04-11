@@ -6,8 +6,8 @@ const sections = [
   { id: "announcements", label: "הודעות" },
   { id: "schedule", label: "מערכת שעות" },
   { id: "events", label: "אירועים" },
-  { id: "teachers", label: "מורים" },
   { id: "seating", label: "מקומות ישיבה" },
+  { id: "teachers", label: "מורים" },
   { id: "links", label: "קישורים" },
 ];
 
