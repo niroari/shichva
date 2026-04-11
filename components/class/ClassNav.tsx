@@ -4,9 +4,9 @@ import Link from "next/link";
 
 const sections = [
   { id: "announcements", label: "הודעות" },
+  { id: "schedule", label: "מערכת שעות" },
   { id: "events", label: "אירועים" },
   { id: "teachers", label: "מורים" },
-  { id: "schedule", label: "מערכת שעות" },
   { id: "seating", label: "מקומות ישיבה" },
   { id: "links", label: "קישורים" },
 ];

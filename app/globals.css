@@ -128,6 +128,88 @@
 }
 
 @layer components {
+  /* ── Schedule table ── */
+  .schedule-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+    background: rgba(38, 36, 80, 0.82);
+    font-size: 0.9rem;
+  }
+
+  .schedule-table th {
+    background: rgba(18, 16, 45, 0.9);
+    color: #cbd5e1;
+    padding: 11px 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.88rem;
+    white-space: nowrap;
+  }
+
+  .schedule-table td {
+    padding: 9px 8px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+  }
+
+  .schedule-table tr:last-child td { border-bottom: none; }
+  .schedule-table tr:hover td { background: rgba(255, 255, 255, 0.06); }
+
+  .schedule-break td {
+    background: rgba(255, 255, 255, 0.02) !important;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 5px 8px;
+  }
+  .schedule-break td:nth-child(2) { font-style: normal; color: #94a3b8; }
+  .schedule-break:hover td { background: rgba(255, 255, 255, 0.02) !important; }
+
+  /* Mobile: sticky first two columns */
+  @media (max-width: 640px) {
+    .schedule-table { overflow: visible; }
+
+    .schedule-table th:first-child,
+    .schedule-table td:first-child {
+      position: sticky;
+      right: 0;
+      z-index: 2;
+      background: rgba(18, 16, 45, 0.97);
+    }
+    .schedule-table td:first-child {
+      background: rgba(38, 36, 80, 0.97);
+    }
+
+    .schedule-table th:nth-child(2),
+    .schedule-table td:nth-child(2) {
+      position: sticky;
+      right: 44px;
+      z-index: 2;
+      background: rgba(18, 16, 45, 0.97);
+    }
+    .schedule-table td:nth-child(2) {
+      background: rgba(38, 36, 80, 0.97);
+    }
+
+    .schedule-break td:first-child,
+    .schedule-break td:nth-child(2) {
+      background: rgba(28, 26, 60, 0.97) !important;
+    }
+  }
+
+  /* ── Class cards ── */
   .class-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
     border: 1px solid rgba(255, 255, 255, 0.12);
