@@ -15,7 +15,8 @@ interface GalleryPhoto {
 export default function Gallery({ classId }: { classId: string }) {
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lightbox, setLightbox] = useState<GalleryPhoto | null>(null);
+  const [current, setCurrent] = useState(0);
+  const [lightbox, setLightbox] = useState(false);
 
   useEffect(() => {
     getDocs(query(collection(db, "classes", classId, "gallery"), orderBy("createdAt", "desc")))
@@ -25,57 +26,124 @@ export default function Gallery({ classId }: { classId: string }) {
       });
   }, [classId]);
 
-  // Close lightbox on Escape
+  // Keyboard navigation
   useEffect(() => {
-    if (!lightbox) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setLightbox(null); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightbox(false);
+      if (e.key === "ArrowLeft") next();
+      if (e.key === "ArrowRight") prev();
+    };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [lightbox]);
+  }, [current, photos.length]);
+
+  function prev() { setCurrent((c) => (c - 1 + photos.length) % photos.length); }
+  function next() { setCurrent((c) => (c + 1) % photos.length); }
 
   if (loading || photos.length === 0) return null;
+
+  const photo = photos[current];
 
   return (
     <>
       <section id="gallery" className="py-16 border-t border-white/10">
         <h2 className="text-2xl font-bold text-foreground mb-6">גלריה</h2>
-        <div className="gallery-grid">
-          {photos.map((photo) => (
-            <button
+
+        <div className="carousel-wrap">
+          {/* Main image */}
+          <div className="carousel-main" onClick={() => setLightbox(true)}>
+            <Image
               key={photo.id}
-              className="gallery-thumb"
-              onClick={() => setLightbox(photo)}
-              title={photo.caption || undefined}
-            >
-              <Image
-                src={photo.url}
-                alt={photo.caption || "תמונה"}
-                fill
-                sizes="(max-width: 640px) 50vw, 25vw"
-                className="object-cover"
-              />
-            </button>
-          ))}
+              src={photo.url}
+              alt={photo.caption || "תמונה"}
+              fill
+              sizes="(max-width: 768px) 100vw, 672px"
+              className="object-cover carousel-img"
+              priority
+            />
+            {/* Arrows */}
+            {photos.length > 1 && (
+              <>
+                <button
+                  className="carousel-arrow carousel-arrow-prev"
+                  onClick={(e) => { e.stopPropagation(); prev(); }}
+                  aria-label="הקודם"
+                >
+                  ›
+                </button>
+                <button
+                  className="carousel-arrow carousel-arrow-next"
+                  onClick={(e) => { e.stopPropagation(); next(); }}
+                  aria-label="הבא"
+                >
+                  ‹
+                </button>
+              </>
+            )}
+            {/* Caption */}
+            {photo.caption && (
+              <div className="carousel-caption">{photo.caption}</div>
+            )}
+          </div>
+
+          {/* Dot indicators */}
+          {photos.length > 1 && (
+            <div className="carousel-dots">
+              {photos.map((_, i) => (
+                <button
+                  key={i}
+                  className={`carousel-dot${i === current ? " active" : ""}`}
+                  onClick={() => setCurrent(i)}
+                  aria-label={`תמונה ${i + 1}`}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Thumbnail strip */}
+          {photos.length > 1 && (
+            <div className="carousel-thumbs">
+              {photos.map((p, i) => (
+                <button
+                  key={p.id}
+                  className={`carousel-thumb-item${i === current ? " active" : ""}`}
+                  onClick={() => setCurrent(i)}
+                >
+                  <Image
+                    src={p.url}
+                    alt={p.caption || "תמונה"}
+                    fill
+                    sizes="72px"
+                    className="object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       {/* Lightbox */}
       {lightbox && (
-        <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
+        <div className="lightbox-overlay" onClick={() => setLightbox(false)}>
           <div className="lightbox-box" onClick={(e) => e.stopPropagation()}>
-            <button className="lightbox-close" onClick={() => setLightbox(null)}>✕</button>
+            <button className="lightbox-close" onClick={() => setLightbox(false)}>✕</button>
+            {photos.length > 1 && (
+              <button className="lightbox-arrow lightbox-arrow-prev" onClick={prev}>›</button>
+            )}
             <div className="lightbox-img-wrap">
               <Image
-                src={lightbox.url}
-                alt={lightbox.caption || "תמונה"}
+                src={photo.url}
+                alt={photo.caption || "תמונה"}
                 fill
                 sizes="90vw"
                 className="object-contain"
               />
             </div>
-            {lightbox.caption && (
-              <p className="lightbox-caption">{lightbox.caption}</p>
+            {photos.length > 1 && (
+              <button className="lightbox-arrow lightbox-arrow-next" onClick={next}>‹</button>
             )}
+            {photo.caption && <p className="lightbox-caption">{photo.caption}</p>}
           </div>
         </div>
       )}
