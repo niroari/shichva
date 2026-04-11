@@ -5,6 +5,7 @@ import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { notFound, useParams } from "next/navigation";
 import LoginForm from "@/components/admin/LoginForm";
+import AdminAnnouncements from "@/components/admin/tabs/AdminAnnouncements";
 
 const classLabels: Record<string, string> = {
   kita1: "כיתה ז׳1",
@@ -89,9 +90,12 @@ export default function AdminPage() {
 
       {/* Tab content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <p className="text-muted-foreground text-center py-12">
-          טאב <strong className="text-foreground">{TABS.find(t => t.id === activeTab)?.label}</strong> — בקרוב
-        </p>
+        {activeTab === "announcements" && <AdminAnnouncements classId={classId} />}
+        {activeTab !== "announcements" && (
+          <p className="text-muted-foreground text-center py-12">
+            טאב <strong className="text-foreground">{TABS.find(t => t.id === activeTab)?.label}</strong> — בקרוב
+          </p>
+        )}
       </div>
     </div>
   );
