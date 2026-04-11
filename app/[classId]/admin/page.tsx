@@ -7,6 +7,7 @@ import { notFound, useParams } from "next/navigation";
 import LoginForm from "@/components/admin/LoginForm";
 import AdminAnnouncements from "@/components/admin/tabs/AdminAnnouncements";
 import AdminEvents from "@/components/admin/tabs/AdminEvents";
+import AdminTeachers from "@/components/admin/tabs/AdminTeachers";
 
 const classLabels: Record<string, string> = {
   kita1: "כיתה ז׳1",
@@ -93,7 +94,8 @@ export default function AdminPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {activeTab === "announcements" && <AdminAnnouncements classId={classId} />}
         {activeTab === "events" && <AdminEvents classId={classId} />}
-        {activeTab !== "announcements" && activeTab !== "events" && (
+        {activeTab === "teachers" && <AdminTeachers classId={classId} />}
+        {activeTab !== "announcements" && activeTab !== "events" && activeTab !== "teachers" && (
           <p className="text-muted-foreground text-center py-12">
             טאב <strong className="text-foreground">{TABS.find(t => t.id === activeTab)?.label}</strong> — בקרוב
           </p>
