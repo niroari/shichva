@@ -11,6 +11,7 @@ import {
   writeBatch,
   getDoc,
   setDoc,
+  addDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -227,8 +228,34 @@ export default function AdminSeating({ classId }: Props) {
     });
   }
 
+  async function initializeSeating() {
+    const colRef = collection(db, "classes", classId, "seating");
+    const emptyRow = { desk1_right: "", desk1_left: "", desk2_right: "", desk2_left: "", desk3_right: "", desk3_left: "", desk4_right: "", desk4_left: "" };
+    for (let i = 1; i <= 5; i++) {
+      await addDoc(colRef, { order: i, ...emptyRow });
+    }
+  }
+
   if (loading)
     return <p className="text-muted-foreground text-center py-12">טוען...</p>;
+
+  if (rows.length === 0) {
+    return (
+      <div className="admin-card text-center py-12 flex flex-col items-center gap-4">
+        <p className="text-muted-foreground text-sm">אין שורות ישיבה עדיין.</p>
+        <button
+          className="btn-primary"
+          onClick={initializeSeating}
+          style={{ padding: "10px 28px" }}
+        >
+          צור רשת ישיבה ריקה (5 שורות)
+        </button>
+        <p className="text-muted-foreground" style={{ fontSize: "0.75rem" }}>
+          יצירת 5 שורות × 4 שולחנות × 2 מושבות · גרור תלמידים למקומות לאחר מכן
+        </p>
+      </div>
+    );
+  }
 
   const totalRows = rows.length;
   const isDraggingAnything = !!dragSrc || !!dragFromSidebar;
