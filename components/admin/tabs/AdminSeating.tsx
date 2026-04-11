@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   collection,
   query,
@@ -9,6 +9,8 @@ import {
   doc,
   updateDoc,
   writeBatch,
+  getDoc,
+  setDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -45,6 +47,10 @@ interface Adding {
   field: SeatField;
 }
 
+function heSort(a: string, b: string) {
+  return a.localeCompare(b, "he");
+}
+
 interface Props {
   classId: string;
 }
@@ -52,12 +58,23 @@ interface Props {
 export default function AdminSeating({ classId }: Props) {
   const [rows, setRows] = useState<SeatingRow[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Roster
+  const [roster, setRoster] = useState<string[]>([]);
+  const [rosterLoaded, setRosterLoaded] = useState(false);
+  const [newStudentName, setNewStudentName] = useState("");
+
+  // Drag — from grid
   const [dragSrc, setDragSrc] = useState<DragSrc | null>(null);
+  // Drag — from sidebar
+  const [dragFromSidebar, setDragFromSidebar] = useState("");
+
   const [dragOverKey, setDragOverKey] = useState("");
   const [adding, setAdding] = useState<Adding | null>(null);
   const [addingName, setAddingName] = useState("");
   const addInputRef = useRef<HTMLInputElement>(null);
 
+  // ── Load seating (real-time) ──
   useEffect(() => {
     const q = query(
       collection(db, "classes", classId, "seating"),
@@ -69,39 +86,97 @@ export default function AdminSeating({ classId }: Props) {
     });
   }, [classId]);
 
-  // Auto-focus the input when add mode activates
+  // ── Load roster from Firestore ──
   useEffect(() => {
-    if (adding) {
-      setTimeout(() => addInputRef.current?.focus(), 0);
+    getDoc(doc(db, "classes", classId, "meta", "students")).then((d) => {
+      if (d.exists()) setRoster((d.data().list as string[]) ?? []);
+      setRosterLoaded(true);
+    });
+  }, [classId]);
+
+  // ── Seed roster from current seating on first load if roster is empty ──
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (seededRef.current || !rosterLoaded || rows.length === 0 || roster.length > 0) return;
+    seededRef.current = true;
+    const names = new Set<string>();
+    rows.forEach((row) => {
+      DESK_PAIRS.forEach(([r, l]) => {
+        if (row[r]?.trim()) names.add(row[r].trim());
+        if (row[l]?.trim()) names.add(row[l].trim());
+      });
+    });
+    const list = [...names].sort(heSort);
+    if (list.length > 0) {
+      setRoster(list);
+      setDoc(doc(db, "classes", classId, "meta", "students"), { list });
     }
+  }, [rows, rosterLoaded, roster.length, classId]);
+
+  // Auto-focus seat input
+  useEffect(() => {
+    if (adding) setTimeout(() => addInputRef.current?.focus(), 0);
   }, [adding]);
 
+  // ── Computed ──
+  const assigned = useMemo(() => {
+    const set = new Set<string>();
+    rows.forEach((row) =>
+      DESK_PAIRS.forEach(([r, l]) => {
+        if (row[r]?.trim()) set.add(row[r].trim());
+        if (row[l]?.trim()) set.add(row[l].trim());
+      })
+    );
+    return set;
+  }, [rows]);
+
+  const unassigned = useMemo(
+    () => roster.filter((n) => !assigned.has(n)).sort(heSort),
+    [roster, assigned]
+  );
+
+  // ── Roster helpers ──
+  async function saveRoster(list: string[]) {
+    await setDoc(doc(db, "classes", classId, "meta", "students"), { list });
+  }
+
+  async function addStudent() {
+    const name = newStudentName.trim();
+    if (!name || roster.includes(name)) return;
+    setNewStudentName("");
+    const updated = [...roster, name].sort(heSort);
+    setRoster(updated);
+    await saveRoster(updated);
+  }
+
+  async function removeFromRoster(name: string) {
+    if (!confirm(`להסיר את ${name} מהרשימה?`)) return;
+    const updated = roster.filter((x) => x !== name);
+    setRoster(updated);
+    await saveRoster(updated);
+  }
+
+  // ── Grid drag & drop ──
   function cellKey(rowId: string, field: SeatField) {
     return `${rowId}::${field}`;
   }
 
-  async function handleDrop(targetRowId: string, targetField: SeatField) {
+  async function handleGridDrop(targetRowId: string, targetField: SeatField) {
     if (!dragSrc) return;
     const { rowId: srcRowId, field: srcField, name: srcName } = dragSrc;
-
-    // Drop on self — no-op
     if (srcRowId === targetRowId && srcField === targetField) {
       setDragOverKey("");
       return;
     }
-
     const targetRow = rows.find((r) => r.id === targetRowId);
     const targetName = targetRow ? targetRow[targetField] || "" : "";
-
     const batch = writeBatch(db);
     if (srcRowId === targetRowId) {
-      // Same row — one write
       batch.update(doc(db, "classes", classId, "seating", srcRowId), {
         [srcField]: targetName,
         [targetField]: srcName,
       });
     } else {
-      // Different rows — two writes
       batch.update(doc(db, "classes", classId, "seating", srcRowId), {
         [srcField]: targetName,
       });
@@ -109,18 +184,34 @@ export default function AdminSeating({ classId }: Props) {
         [targetField]: srcName,
       });
     }
-
     await batch.commit();
     setDragSrc(null);
     setDragOverKey("");
   }
 
+  // ── Sidebar drag & drop (empty seats only) ──
+  async function handleSidebarDrop(targetRowId: string, targetField: SeatField) {
+    if (!dragFromSidebar) return;
+    await updateDoc(doc(db, "classes", classId, "seating", targetRowId), {
+      [targetField]: dragFromSidebar,
+    });
+    setDragFromSidebar("");
+    setDragOverKey("");
+  }
+
+  // ── Add via seat + button ──
   async function confirmAdd() {
     const name = addingName.trim();
     if (!name || !adding) {
       setAdding(null);
       setAddingName("");
       return;
+    }
+    // Also register in roster if not present
+    if (!roster.includes(name)) {
+      const updatedRoster = [...roster, name].sort(heSort);
+      setRoster(updatedRoster);
+      await saveRoster(updatedRoster);
     }
     await updateDoc(doc(db, "classes", classId, "seating", adding.rowId), {
       [adding.field]: name,
@@ -130,7 +221,7 @@ export default function AdminSeating({ classId }: Props) {
   }
 
   async function removeSeat(rowId: string, field: SeatField, name: string) {
-    if (!confirm(`להסיר את ${name}?`)) return;
+    if (!confirm(`להסיר את ${name} מהמושב?`)) return;
     await updateDoc(doc(db, "classes", classId, "seating", rowId), {
       [field]: "",
     });
@@ -140,131 +231,199 @@ export default function AdminSeating({ classId }: Props) {
     return <p className="text-muted-foreground text-center py-12">טוען...</p>;
 
   const totalRows = rows.length;
+  const isDraggingAnything = !!dragSrc || !!dragFromSidebar;
 
   return (
-    <div className="admin-seating">
-      <p className="text-muted-foreground text-sm text-center mb-5">
-        גרור תלמיד/ה למקום אחר כדי להחליף · לחץ + להוספה · לחץ × להסרה
-      </p>
+    <div className="admin-schedule-layout">
+      {/* ── Sidebar (right in RTL) ── */}
+      <div className="admin-palette">
+        <p className="admin-palette-title">
+          לא משובצים
+          {unassigned.length > 0 && (
+            <span style={{ color: "#7c3aed", marginRight: 4 }}>({unassigned.length})</span>
+          )}
+        </p>
 
-      {rows.map((row, rowIdx) => (
-        <div key={row.id} className="admin-seating-row">
-          <span className="admin-row-label">שורה {totalRows - rowIdx}</span>
-          <div className="admin-desks">
-            {DESK_PAIRS.map(([rightField, leftField], deskIdx) => (
-              <div key={deskIdx} className="admin-desk">
-                {([rightField, leftField] as SeatField[]).map((field) => {
-                  const key = cellKey(row.id, field);
-                  const name = row[field] || "";
-                  const isOver = dragOverKey === key;
-                  const isDraggingSelf =
-                    dragSrc?.rowId === row.id && dragSrc?.field === field;
-                  const isAdding =
-                    adding?.rowId === row.id && adding?.field === field;
+        <div className="admin-palette-list">
+          {unassigned.length === 0 && (
+            <p style={{ fontSize: "0.78rem", color: "#475569" }}>
+              {roster.length === 0 ? "אין תלמידים ברשימה" : "כולם משובצים ✓"}
+            </p>
+          )}
+          {unassigned.map((name) => (
+            <div key={name} className="admin-palette-row">
+              <div
+                className={`admin-palette-chip${dragFromSidebar === name ? " dragging" : ""}`}
+                draggable
+                onDragStart={() => setDragFromSidebar(name)}
+                onDragEnd={() => {
+                  setDragFromSidebar("");
+                  setDragOverKey("");
+                }}
+              >
+                {name}
+              </div>
+              <button
+                className="admin-palette-remove"
+                title="הסר מהרשימה"
+                onClick={() => removeFromRoster(name)}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
 
-                  // ── Adding mode ──
-                  if (isAdding) {
-                    return (
-                      <div key={field} className="admin-seat admin-seat-adding">
-                        <input
-                          ref={addInputRef}
-                          className="admin-seat-input"
-                          value={addingName}
-                          onChange={(e) => setAddingName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") confirmAdd();
-                            if (e.key === "Escape") {
-                              setAdding(null);
-                              setAddingName("");
-                            }
+        <div className="admin-palette-add">
+          <input
+            type="text"
+            placeholder="שם תלמיד/ה..."
+            value={newStudentName}
+            onChange={(e) => setNewStudentName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addStudent()}
+          />
+          <button
+            className="btn-primary"
+            onClick={addStudent}
+            style={{ padding: "6px 12px", fontSize: "0.85rem" }}
+          >
+            + הוסף
+          </button>
+        </div>
+      </div>
+
+      {/* ── Seating grid (left in RTL) ── */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p className="text-muted-foreground text-sm text-center mb-4" style={{ fontSize: "0.78rem" }}>
+          גרור תלמיד/ה מהרשימה לכיסא פנוי · גרור בין מושבות להחלפה · לחץ × להסרה
+        </p>
+
+        {rows.map((row, rowIdx) => (
+          <div key={row.id} className="admin-seating-row">
+            <span className="admin-row-label">שורה {totalRows - rowIdx}</span>
+            <div className="admin-desks">
+              {DESK_PAIRS.map(([rightField, leftField], deskIdx) => (
+                <div key={deskIdx} className="admin-desk">
+                  {([rightField, leftField] as SeatField[]).map((field) => {
+                    const key = cellKey(row.id, field);
+                    const name = row[field] || "";
+                    const isOver = dragOverKey === key;
+                    const isDraggingSelf =
+                      dragSrc?.rowId === row.id && dragSrc?.field === field;
+                    const isAdding =
+                      adding?.rowId === row.id && adding?.field === field;
+
+                    // ── Adding mode ──
+                    if (isAdding) {
+                      return (
+                        <div key={field} className="admin-seat admin-seat-adding">
+                          <input
+                            ref={addInputRef}
+                            className="admin-seat-input"
+                            value={addingName}
+                            onChange={(e) => setAddingName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") confirmAdd();
+                              if (e.key === "Escape") {
+                                setAdding(null);
+                                setAddingName("");
+                              }
+                            }}
+                            placeholder="שם..."
+                          />
+                          <button
+                            className="admin-seat-confirm"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              confirmAdd();
+                            }}
+                          >
+                            ✓
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    // ── Empty seat ──
+                    if (!name) {
+                      return (
+                        <div
+                          key={field}
+                          className={`admin-seat admin-seat-empty${isOver ? " drag-over" : ""}`}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            if (isDraggingAnything) setDragOverKey(key);
                           }}
-                          placeholder="שם..."
-                        />
-                        <button
-                          className="admin-seat-confirm"
-                          onMouseDown={(e) => {
-                            e.preventDefault(); // prevent input blur before click
-                            confirmAdd();
+                          onDragLeave={(e) => {
+                            if (!e.currentTarget.contains(e.relatedTarget as Node))
+                              setDragOverKey("");
+                          }}
+                          onDrop={() => {
+                            if (dragFromSidebar) handleSidebarDrop(row.id, field);
+                            else handleGridDrop(row.id, field);
+                          }}
+                          onClick={() => {
+                            if (isDraggingAnything) return;
+                            setAdding({ rowId: row.id, field });
+                            setAddingName("");
                           }}
                         >
-                          ✓
-                        </button>
-                      </div>
-                    );
-                  }
+                          <span className="admin-seat-plus">+</span>
+                        </div>
+                      );
+                    }
 
-                  // ── Empty seat ──
-                  if (!name) {
+                    // ── Occupied seat ──
                     return (
                       <div
                         key={field}
-                        className={`admin-seat admin-seat-empty${isOver ? " drag-over" : ""}`}
+                        className={`admin-seat admin-seat-occupied${isDraggingSelf ? " dragging" : ""}${isOver ? " drag-over" : ""}`}
+                        draggable
+                        onDragStart={() =>
+                          setDragSrc({ rowId: row.id, field, name })
+                        }
+                        onDragEnd={() => {
+                          setDragSrc(null);
+                          setDragOverKey("");
+                        }}
                         onDragOver={(e) => {
                           e.preventDefault();
-                          if (dragSrc) setDragOverKey(key);
+                          // Only grid-to-grid swaps on occupied seats
+                          if (dragSrc && !isDraggingSelf) setDragOverKey(key);
                         }}
                         onDragLeave={(e) => {
                           if (!e.currentTarget.contains(e.relatedTarget as Node))
                             setDragOverKey("");
                         }}
-                        onDrop={() => handleDrop(row.id, field)}
-                        onClick={() => {
-                          setAdding({ rowId: row.id, field });
-                          setAddingName("");
+                        onDrop={() => {
+                          if (dragFromSidebar) return; // sidebar can't drop on occupied
+                          handleGridDrop(row.id, field);
                         }}
                       >
-                        <span className="admin-seat-plus">+</span>
+                        <span className="admin-seat-name">{name}</span>
+                        <button
+                          className="admin-seat-remove"
+                          title="הסר מהמושב"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeSeat(row.id, field, name);
+                          }}
+                        >
+                          ×
+                        </button>
                       </div>
                     );
-                  }
-
-                  // ── Occupied seat ──
-                  return (
-                    <div
-                      key={field}
-                      className={`admin-seat admin-seat-occupied${isDraggingSelf ? " dragging" : ""}${isOver ? " drag-over" : ""}`}
-                      draggable
-                      onDragStart={() =>
-                        setDragSrc({ rowId: row.id, field, name })
-                      }
-                      onDragEnd={() => {
-                        setDragSrc(null);
-                        setDragOverKey("");
-                      }}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        if (dragSrc && !isDraggingSelf) setDragOverKey(key);
-                      }}
-                      onDragLeave={(e) => {
-                        if (!e.currentTarget.contains(e.relatedTarget as Node))
-                          setDragOverKey("");
-                      }}
-                      onDrop={() => handleDrop(row.id, field)}
-                    >
-                      <span className="admin-seat-name">{name}</span>
-                      <button
-                        className="admin-seat-remove"
-                        title="הסר"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeSeat(row.id, field, name);
-                        }}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
 
-      {/* Classroom footer — board + door */}
-      <div className="admin-seating-footer">
-        <div className="admin-seating-door">דלת</div>
-        <div className="admin-seating-board">לוח</div>
+        <div className="admin-seating-footer">
+          <div className="admin-seating-door">דלת</div>
+          <div className="admin-seating-board">לוח</div>
+        </div>
       </div>
     </div>
   );
