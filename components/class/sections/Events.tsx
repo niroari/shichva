@@ -164,15 +164,6 @@ export default function Events({ classId }: { classId: string }) {
         })}
       </div>
 
-      {/* Toggle past events */}
-      <div className="flex justify-center mb-4">
-        <button
-          onClick={() => setShowPast((p) => !p)}
-          className="text-xs text-slate-400 border border-white/15 bg-white/[0.07] px-4 py-1.5 rounded-full hover:bg-white/[0.13] hover:text-slate-200 transition-all cursor-pointer"
-        >
-          {showPast ? "הסתר אירועים שעברו" : "הצג אירועים שעברו"}
-        </button>
-      </div>
 
       {/* Month navigator — direction: ltr so ‹ is physically left (= forward) */}
       <div
