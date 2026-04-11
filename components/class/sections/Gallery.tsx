@@ -66,14 +66,14 @@ export default function Gallery({ classId }: { classId: string }) {
               <>
                 <button
                   className="carousel-arrow carousel-arrow-prev"
-                  onClick={(e) => { e.stopPropagation(); prev(); }}
+                  onClick={(e) => { e.stopPropagation(); next(); }}
                   aria-label="הקודם"
                 >
                   ›
                 </button>
                 <button
                   className="carousel-arrow carousel-arrow-next"
-                  onClick={(e) => { e.stopPropagation(); next(); }}
+                  onClick={(e) => { e.stopPropagation(); prev(); }}
                   aria-label="הבא"
                 >
                   ‹
@@ -129,7 +129,7 @@ export default function Gallery({ classId }: { classId: string }) {
           <div className="lightbox-box" onClick={(e) => e.stopPropagation()}>
             <button className="lightbox-close" onClick={() => setLightbox(false)}>✕</button>
             {photos.length > 1 && (
-              <button className="lightbox-arrow lightbox-arrow-prev" onClick={prev}>›</button>
+              <button className="lightbox-arrow lightbox-arrow-prev" onClick={next}>›</button>
             )}
             <div className="lightbox-img-wrap">
               <Image
@@ -141,7 +141,7 @@ export default function Gallery({ classId }: { classId: string }) {
               />
             </div>
             {photos.length > 1 && (
-              <button className="lightbox-arrow lightbox-arrow-next" onClick={next}>‹</button>
+              <button className="lightbox-arrow lightbox-arrow-next" onClick={prev}>‹</button>
             )}
             {photo.caption && <p className="lightbox-caption">{photo.caption}</p>}
           </div>
