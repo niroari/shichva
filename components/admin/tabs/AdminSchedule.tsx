@@ -384,9 +384,9 @@ export default function AdminSchedule({ classId }: Props) {
             className="btn-save"
             onClick={syncTimesFromKita2}
             style={{ marginRight: "auto" }}
-            title="העתק שעות מהמערכת של כיתה ז׳2"
+            title="העתק שעות מלוח הצלצולים"
           >
-            קבל שעות מכיתה ז׳2
+            קבל שעות מלוח הצלצולים
           </button>
         </div>
       </div>
