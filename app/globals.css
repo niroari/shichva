@@ -803,6 +803,22 @@
   .sched-drop-over { background: rgba(124,58,237,0.22); outline: 2px solid rgba(124,58,237,0.6); outline-offset: -2px; border-radius: 4px; }
   .sched-break td { text-align: center; padding: 4px 6px; font-size: 0.76rem; color: #334155; background: rgba(255,255,255,0.02); }
 
+  /* ── Geometric background ── */
+  .geo-bg {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .geo-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.032) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+
   /* ── Class cards ── */
   .class-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
