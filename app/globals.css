@@ -562,6 +562,98 @@
     margin-left: 6px;
   }
 
+  /* ── Admin schedule editor ── */
+  .admin-schedule-layout { display: flex; gap: 20px; align-items: flex-start; }
+
+  .admin-palette {
+    width: 155px;
+    flex-shrink: 0;
+    background: rgba(17,16,42,0.7);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: sticky;
+    top: 72px;
+  }
+  .admin-palette-title { font-size: 0.72rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.07em; }
+
+  .admin-palette-list { display: flex; flex-direction: column; gap: 5px; max-height: 340px; overflow-y: auto; }
+  .admin-palette-row { display: flex; align-items: center; gap: 5px; }
+  .admin-palette-chip {
+    flex: 1;
+    background: rgba(124,58,237,0.18);
+    border: 1px solid rgba(124,58,237,0.32);
+    color: #c4b5fd;
+    border-radius: 7px;
+    padding: 5px 8px;
+    font-size: 0.8rem;
+    cursor: grab;
+    user-select: none;
+    text-align: center;
+    transition: background 0.15s, opacity 0.15s;
+    font-family: inherit;
+  }
+  .admin-palette-chip:hover { background: rgba(124,58,237,0.32); }
+  .admin-palette-chip.dragging { opacity: 0.35; cursor: grabbing; }
+
+  .admin-palette-remove { color: #475569; background: none; border: none; cursor: pointer; font-size: 1rem; line-height: 1; padding: 2px 3px; border-radius: 4px; font-family: inherit; transition: color 0.15s; }
+  .admin-palette-remove:hover { color: #f87171; }
+
+  .admin-palette-clear {
+    background: rgba(239,68,68,0.1);
+    border: 1px dashed rgba(239,68,68,0.3);
+    color: #fca5a5;
+    border-radius: 7px;
+    padding: 5px 8px;
+    font-size: 0.78rem;
+    cursor: grab;
+    user-select: none;
+    text-align: center;
+    transition: background 0.15s, opacity 0.15s;
+  }
+  .admin-palette-clear:hover { background: rgba(239,68,68,0.2); }
+  .admin-palette-clear.dragging { opacity: 0.35; cursor: grabbing; }
+
+  .admin-palette-add { display: flex; flex-direction: column; gap: 5px; border-top: 1px solid rgba(255,255,255,0.07); padding-top: 10px; }
+  .admin-palette-add input {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 7px;
+    padding: 6px 8px;
+    color: #e2e8f0;
+    font-size: 0.8rem;
+    font-family: inherit;
+    outline: none;
+    box-sizing: border-box;
+  }
+  .admin-palette-add input:focus { border-color: rgba(124,58,237,0.5); }
+
+  /* Admin schedule table */
+  .admin-sched-wrap { flex: 1; overflow-x: auto; }
+  .admin-sched-table { border-collapse: collapse; font-size: 0.85rem; width: 100%; }
+  .admin-sched-table th { text-align: center; color: #475569; font-size: 0.75rem; font-weight: 600; padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap; }
+  .admin-sched-table td { border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .sched-period { font-weight: 700; color: #60a5fa; text-align: center; padding: 8px 6px; white-space: nowrap; }
+  .sched-time { color: #475569; font-size: 0.75rem; text-align: center; padding: 8px 4px; white-space: nowrap; }
+  .sched-drop-cell {
+    text-align: center;
+    padding: 6px 4px;
+    min-width: 76px;
+    height: 40px;
+    font-size: 0.82rem;
+    color: #e2e8f0;
+    transition: background 0.1s;
+    cursor: default;
+    position: relative;
+  }
+  .sched-drop-empty { color: #1e293b; }
+  .sched-drop-over { background: rgba(124,58,237,0.22); outline: 2px solid rgba(124,58,237,0.6); outline-offset: -2px; border-radius: 4px; }
+  .sched-break td { text-align: center; padding: 4px 6px; font-size: 0.76rem; color: #334155; background: rgba(255,255,255,0.02); }
+
   /* ── Class cards ── */
   .class-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
