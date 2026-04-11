@@ -7,6 +7,7 @@ import Seating from "@/components/class/sections/Seating";
 import Teachers from "@/components/class/sections/Teachers";
 import QuickLinks from "@/components/class/sections/QuickLinks";
 import EmergencySchedule from "@/components/class/sections/EmergencySchedule";
+import Gallery from "@/components/class/sections/Gallery";
 
 const classLabels: Record<string, string> = {
   kita1: "כיתה ז׳1",
@@ -90,6 +91,8 @@ export default async function ClassPage({
           <h2 className="text-2xl font-bold text-foreground mb-6">צוות המורים</h2>
           <Teachers classId={classId} />
         </section>
+
+        <Gallery classId={classId} />
 
         <section id="links" className="py-16 border-t border-white/10">
           <h2 className="text-2xl font-bold text-foreground mb-6">קישורים חשובים</h2>
