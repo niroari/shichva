@@ -9,6 +9,7 @@ import AdminAnnouncements from "@/components/admin/tabs/AdminAnnouncements";
 import AdminEvents from "@/components/admin/tabs/AdminEvents";
 import AdminTeachers from "@/components/admin/tabs/AdminTeachers";
 import AdminSchedule from "@/components/admin/tabs/AdminSchedule";
+import AdminSeating from "@/components/admin/tabs/AdminSeating";
 
 const classLabels: Record<string, string> = {
   kita1: "כיתה ז׳1",
@@ -97,7 +98,8 @@ export default function AdminPage() {
         {activeTab === "events" && <AdminEvents classId={classId} />}
         {activeTab === "teachers" && <AdminTeachers classId={classId} />}
         {activeTab === "schedule" && <AdminSchedule classId={classId} />}
-        {activeTab !== "announcements" && activeTab !== "events" && activeTab !== "teachers" && activeTab !== "schedule" && (
+        {activeTab === "seating" && <AdminSeating classId={classId} />}
+        {activeTab !== "announcements" && activeTab !== "events" && activeTab !== "teachers" && activeTab !== "schedule" && activeTab !== "seating" && (
           <p className="text-muted-foreground text-center py-12">
             טאב <strong className="text-foreground">{TABS.find(t => t.id === activeTab)?.label}</strong> — בקרוב
           </p>

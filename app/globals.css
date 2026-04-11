@@ -562,6 +562,155 @@
     margin-left: 6px;
   }
 
+  /* ── Admin seating editor ── */
+  .admin-seating { max-width: 720px; margin: 0 auto; }
+  .admin-seating-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .admin-row-label {
+    width: 52px;
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    color: #475569;
+    font-weight: 600;
+    text-align: center;
+  }
+  .admin-desks { display: flex; gap: 8px; flex: 1; }
+  .admin-desk {
+    display: flex;
+    gap: 3px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    padding: 4px;
+    flex: 1;
+  }
+  .admin-seat {
+    flex: 1;
+    height: 46px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: background 0.12s, opacity 0.12s, outline 0.1s;
+    min-width: 0;
+  }
+  .admin-seat-occupied {
+    background: rgba(96,165,250,0.12);
+    border: 1px solid rgba(96,165,250,0.25);
+    cursor: grab;
+    user-select: none;
+  }
+  .admin-seat-occupied:hover { background: rgba(96,165,250,0.2); }
+  .admin-seat-occupied.dragging { opacity: 0.35; cursor: grabbing; }
+  .admin-seat-occupied.drag-over {
+    background: rgba(124,58,237,0.28);
+    outline: 2px solid rgba(124,58,237,0.7);
+    outline-offset: -2px;
+  }
+  .admin-seat-empty {
+    background: transparent;
+    border: 1px dashed rgba(255,255,255,0.1);
+    cursor: pointer;
+  }
+  .admin-seat-empty:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.2); }
+  .admin-seat-empty.drag-over {
+    background: rgba(52,211,153,0.15);
+    outline: 2px solid rgba(52,211,153,0.5);
+    outline-offset: -2px;
+    border-color: transparent;
+  }
+  .admin-seat-adding {
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.4);
+    padding: 0 4px;
+    gap: 3px;
+  }
+  .admin-seat-name {
+    font-size: 0.78rem;
+    color: #e2e8f0;
+    text-align: center;
+    padding: 0 18px 0 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+  .admin-seat-remove {
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 0.85rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px;
+    font-family: inherit;
+    transition: color 0.15s;
+  }
+  .admin-seat-remove:hover { color: #f87171; }
+  .admin-seat-plus { font-size: 1.1rem; color: #334155; font-weight: 300; transition: color 0.15s; }
+  .admin-seat-empty:hover .admin-seat-plus { color: #94a3b8; }
+  .admin-seat-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: #e2e8f0;
+    font-size: 0.78rem;
+    font-family: inherit;
+    text-align: center;
+    min-width: 0;
+  }
+  .admin-seat-confirm {
+    background: rgba(52,211,153,0.2);
+    border: none;
+    color: #6ee7b7;
+    border-radius: 5px;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: inherit;
+    flex-shrink: 0;
+  }
+  .admin-seating-footer {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 14px;
+    margin-right: 62px; /* align with desks past the row label */
+  }
+  .admin-seating-board {
+    flex: 1;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.12);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #475569;
+    letter-spacing: 0.1em;
+  }
+  .admin-seating-door {
+    width: 48px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.07);
+    font-size: 0.68rem;
+    color: #334155;
+  }
+
   /* ── Admin schedule editor ── */
   .admin-schedule-layout { display: flex; gap: 20px; align-items: flex-start; }
 
