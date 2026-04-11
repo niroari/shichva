@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import ClassNav from "@/components/class/ClassNav";
+import Announcements from "@/components/class/sections/Announcements";
 import QuickLinks from "@/components/class/sections/QuickLinks";
 
 const classLabels: Record<string, string> = {
@@ -31,8 +32,8 @@ export default async function ClassPage({
         </div>
 
         <section id="announcements" className="py-16 border-t border-white/10">
-          <h2 className="text-2xl font-bold text-foreground mb-6">הודעות</h2>
-          <p className="text-muted-foreground">בקרוב...</p>
+          <h2 className="text-2xl font-bold text-foreground mb-6">הודעות המחנך</h2>
+          <Announcements classId={classId} />
         </section>
 
         <section id="events" className="py-16 border-t border-white/10">
