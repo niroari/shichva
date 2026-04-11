@@ -210,6 +210,13 @@
   }
 
   /* ── Seating chart ── */
+  .classroom {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .classroom-inner {
+    min-width: 520px;
+  }
   .desk-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
