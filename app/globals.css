@@ -463,6 +463,105 @@
   }
   .teacher-mashov:hover { background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.35); color: #cbd5e1; }
 
+  /* ── Admin panel ── */
+  .admin-card {
+    background: rgba(17, 16, 42, 0.65);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 24px;
+    backdrop-filter: blur(12px);
+  }
+  .admin-card h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 16px;
+  }
+
+  .form-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 160px; }
+  .form-group label { font-size: 0.8rem; color: #94a3b8; }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #e2e8f0;
+    font-size: 0.88rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: rgba(124,58,237,0.6); }
+  .form-group textarea { min-height: 72px; resize: vertical; }
+  .form-group select option { background: #1a1735; }
+
+  .form-check { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .form-check input { accent-color: #7c3aed; width: 15px; height: 15px; cursor: pointer; }
+  .form-check label { font-size: 0.85rem; color: #94a3b8; cursor: pointer; }
+
+  .btn-primary {
+    background: rgba(124,58,237,0.75);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover:not(:disabled) { background: rgba(124,58,237,1); }
+  .btn-primary:disabled { opacity: 0.45; cursor: default; }
+
+  .btn-edit   { background: rgba(59,130,246,0.18); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+  .btn-danger { background: rgba(239,68,68,0.15);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.3);  padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+  .btn-save   { background: rgba(52,211,153,0.15); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.3); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
+  .btn-cancel { background: rgba(255,255,255,0.06); color: #94a3b8; border: 1px solid rgba(255,255,255,0.12); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
+  .btn-edit:hover   { background: rgba(59,130,246,0.3); }
+  .btn-danger:hover { background: rgba(239,68,68,0.28); }
+
+  .admin-table-wrapper { overflow-x: auto; border-radius: 10px; }
+  .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .admin-table th { text-align: right; color: #64748b; font-weight: 600; font-size: 0.78rem; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap; }
+  .admin-table td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #e2e8f0; vertical-align: middle; }
+  .admin-table tr:last-child td { border-bottom: none; }
+  .admin-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .admin-table .cell-trunc { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .admin-table .cell-nowrap { white-space: nowrap; }
+  .admin-table .cell-dim { color: #64748b; font-size: 0.82em; }
+
+  .inline-input {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(124,58,237,0.4);
+    border-radius: 6px;
+    padding: 5px 8px;
+    color: #e2e8f0;
+    font-size: 0.83rem;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+  }
+  textarea.inline-input { min-height: 56px; resize: vertical; }
+
+  .important-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fca5a5;
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 20px;
+    padding: 1px 8px;
+    margin-left: 6px;
+  }
+
   /* ── Class cards ── */
   .class-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);

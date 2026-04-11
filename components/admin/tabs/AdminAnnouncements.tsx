@@ -173,11 +173,11 @@ export default function AdminAnnouncements({ classId }: Props) {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>תאריך</th>
+                  <th style={{ width: 70 }}>תאריך</th>
                   <th>כותרת</th>
                   <th>תוכן</th>
-                  <th>חשוב</th>
-                  <th>פעולות</th>
+                  <th style={{ width: 60 }}>חשוב</th>
+                  <th style={{ width: 120 }}>פעולות</th>
                 </tr>
               </thead>
               <tbody>
@@ -234,25 +234,17 @@ export default function AdminAnnouncements({ classId }: Props) {
                   ) : (
                     // Display row
                     <tr key={item.id}>
-                      <td style={{ whiteSpace: "nowrap" }}>{item.date}</td>
-                      <td>
-                        {item.important && (
-                          <span className="important-badge">חשוב</span>
-                        )}{" "}
+                      <td className="cell-nowrap cell-dim">{item.date}</td>
+                      <td className="cell-trunc">
+                        {item.important && <span className="important-badge">חשוב</span>}{" "}
                         {item.title}
                       </td>
-                      <td style={{ color: "var(--color-muted-foreground)", fontSize: "0.85em" }}>
-                        {item.body || "—"}
-                      </td>
-                      <td>{item.important ? "✓" : ""}</td>
-                      <td>
+                      <td className="cell-trunc cell-dim">{item.body || "—"}</td>
+                      <td style={{ textAlign: "center" }}>{item.important ? "✓" : ""}</td>
+                      <td className="cell-nowrap">
                         <div className="flex gap-2">
-                          <button className="btn-edit" onClick={() => startEdit(item)}>
-                            עריכה
-                          </button>
-                          <button className="btn-danger" onClick={() => handleDelete(item)}>
-                            מחיקה
-                          </button>
+                          <button className="btn-edit" onClick={() => startEdit(item)}>עריכה</button>
+                          <button className="btn-danger" onClick={() => handleDelete(item)}>מחיקה</button>
                         </div>
                       </td>
                     </tr>

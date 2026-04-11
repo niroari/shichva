@@ -232,19 +232,18 @@ export default function AdminEvents({ classId }: Props) {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>חודש</th>
-                  <th>תאריך</th>
+                  <th style={{ width: 100 }}>תאריך</th>
                   <th>כותרת</th>
-                  <th>שעה</th>
-                  <th>קטגוריה</th>
-                  <th>פעולות</th>
+                  <th style={{ width: 80 }}>שעה</th>
+                  <th style={{ width: 80 }}>קטגוריה</th>
+                  <th style={{ width: 120 }}>פעולות</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item) =>
                   editId === item.id ? (
                     <tr key={item.id}>
-                      <td colSpan={2}>
+                      <td>
                         <div className="flex flex-col gap-1">
                           <input
                             className="inline-input"
@@ -259,7 +258,6 @@ export default function AdminEvents({ classId }: Props) {
                             value={editEndDate}
                             onChange={(e) => setEditEndDate(e.target.value)}
                             dir="ltr"
-                            placeholder="סיום (אופציונלי)"
                           />
                         </div>
                       </td>
@@ -268,7 +266,6 @@ export default function AdminEvents({ classId }: Props) {
                           className="inline-input"
                           value={editTitle}
                           onChange={(e) => setEditTitle(e.target.value)}
-                          style={{ minWidth: 160 }}
                         />
                       </td>
                       <td>
@@ -276,7 +273,6 @@ export default function AdminEvents({ classId }: Props) {
                           className="inline-input"
                           value={editTime}
                           onChange={(e) => setEditTime(e.target.value)}
-                          style={{ width: 80 }}
                           dir="ltr"
                         />
                       </td>
@@ -291,42 +287,28 @@ export default function AdminEvents({ classId }: Props) {
                           ))}
                         </select>
                       </td>
-                      <td>
+                      <td className="cell-nowrap">
                         <div className="flex gap-2">
-                          <button
-                            className="btn-save"
-                            onClick={() => saveEdit(item)}
-                            disabled={editSaving}
-                          >
+                          <button className="btn-save" onClick={() => saveEdit(item)} disabled={editSaving}>
                             {editSaving ? "..." : "שמור"}
                           </button>
-                          <button className="btn-cancel" onClick={cancelEdit}>
-                            ביטול
-                          </button>
+                          <button className="btn-cancel" onClick={cancelEdit}>ביטול</button>
                         </div>
                       </td>
                     </tr>
                   ) : (
                     <tr key={item.id}>
-                      <td style={{ whiteSpace: "nowrap", color: "var(--color-muted-foreground)", fontSize: "0.85em" }}>
-                        {groupLabel(item.date)}
+                      <td className="cell-nowrap">
+                        <div className="cell-dim" style={{ fontSize: "0.78em", marginBottom: 2 }}>{groupLabel(item.date)}</div>
+                        <div>{formatDisplay(item.date, item.endDate)}</div>
                       </td>
-                      <td style={{ whiteSpace: "nowrap" }}>
-                        {formatDisplay(item.date, item.endDate)}
-                      </td>
-                      <td>{item.title}</td>
-                      <td style={{ color: "var(--color-muted-foreground)", fontSize: "0.85em" }}>
-                        {item.time || "—"}
-                      </td>
-                      <td>{item.category}</td>
-                      <td>
+                      <td className="cell-trunc">{item.title}</td>
+                      <td className="cell-nowrap cell-dim">{item.time || "—"}</td>
+                      <td className="cell-nowrap">{item.category}</td>
+                      <td className="cell-nowrap">
                         <div className="flex gap-2">
-                          <button className="btn-edit" onClick={() => startEdit(item)}>
-                            עריכה
-                          </button>
-                          <button className="btn-danger" onClick={() => handleDelete(item)}>
-                            מחיקה
-                          </button>
+                          <button className="btn-edit" onClick={() => startEdit(item)}>עריכה</button>
+                          <button className="btn-danger" onClick={() => handleDelete(item)}>מחיקה</button>
                         </div>
                       </td>
                     </tr>

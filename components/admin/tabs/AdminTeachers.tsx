@@ -193,12 +193,12 @@ export default function AdminTeachers({ classId }: Props) {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>שם</th>
-                  <th>מקצוע</th>
-                  <th>תפקיד</th>
-                  <th>טלפון</th>
+                  <th style={{ width: 130 }}>שם</th>
+                  <th style={{ width: 110 }}>מקצוע</th>
+                  <th style={{ width: 90 }}>תפקיד</th>
+                  <th style={{ width: 120 }}>טלפון</th>
                   <th>אימייל</th>
-                  <th>פעולות</th>
+                  <th style={{ width: 120 }}>פעולות</th>
                 </tr>
               </thead>
               <tbody>
@@ -280,20 +280,16 @@ export default function AdminTeachers({ classId }: Props) {
                           </span>
                         ) : "—"}
                       </td>
-                      <td style={{ direction: "ltr", textAlign: "left", color: "var(--color-muted-foreground)", fontSize: "0.85em" }}>
+                      <td className="cell-nowrap cell-dim" style={{ direction: "ltr" }}>
                         {item.phone || "—"}
                       </td>
-                      <td style={{ direction: "ltr", textAlign: "left", color: "var(--color-muted-foreground)", fontSize: "0.85em" }}>
+                      <td className="cell-trunc cell-dim" style={{ direction: "ltr" }}>
                         {item.email || "—"}
                       </td>
-                      <td>
+                      <td className="cell-nowrap">
                         <div className="flex gap-2">
-                          <button className="btn-edit" onClick={() => startEdit(item)}>
-                            עריכה
-                          </button>
-                          <button className="btn-danger" onClick={() => handleDelete(item)}>
-                            מחיקה
-                          </button>
+                          <button className="btn-edit" onClick={() => startEdit(item)}>עריכה</button>
+                          <button className="btn-danger" onClick={() => handleDelete(item)}>מחיקה</button>
                         </div>
                       </td>
                     </tr>
