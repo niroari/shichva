@@ -12,6 +12,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import AdminGuide from "@/components/admin/AdminGuide";
 
 interface Teacher {
   id: string;
@@ -114,6 +115,12 @@ export default function AdminTeachers({ classId }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
+      <AdminGuide items={[
+        "הוסף את פרטי כל מורה דרך הטופס",
+        "מספר טלפון יהפוך אוטומטית לקישור לוואטסאפ",
+        "אימייל יהפוך לקישור שליחת מייל",
+        'אם לא הוזנו פרטי קשר, יופיע הכיתוב "יש ליצור קשר במשוב"',
+      ]} />
       {/* Add form */}
       <div className="admin-card">
         <h2 className="text-lg font-bold text-foreground mb-4">הוספת מורה</h2>

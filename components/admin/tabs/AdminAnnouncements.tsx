@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AdminGuide from "@/components/admin/AdminGuide";
 import {
   collection,
   onSnapshot,
@@ -107,6 +108,12 @@ export default function AdminAnnouncements({ classId }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
+      <AdminGuide items={[
+        "לחץ על הטופס למעלה כדי להוסיף הודעה חדשה",
+        'סמן "הודעה דחופה" כדי שתופיע עם רקע בולט',
+        "לעריכת הודעה קיימת — לחץ על כפתור העריכה בשורה שלה",
+        "למחיקה — לחץ על הכפתור האדום",
+      ]} />
       {/* Add form */}
       <div className="admin-card">
         <h2 className="text-lg font-bold text-foreground mb-4">הוספת הודעה</h2>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import AdminGuide from "@/components/admin/AdminGuide";
 import {
   collection,
   query,
@@ -242,6 +243,13 @@ export default function AdminSchedule({ classId }: Props) {
   }
 
   return (
+    <>
+    <AdminGuide items={[
+      "גרור מקצוע מהרשימה בצד ושחרר על התא הרצוי בטבלה",
+      "לשינוי שעה — לחץ על השעה בטבלה וערוך ישירות",
+      'כדי לרוקן תא — גרור את "✕ מחק תא" על אותו תא',
+      "ניתן להוסיף מקצועות חדשים לרשימה דרך השדה בתחתית",
+    ]} />
     <div className="admin-schedule-layout">
       {/* ── Subject palette ── */}
       <div className="admin-palette">
@@ -391,5 +399,6 @@ export default function AdminSchedule({ classId }: Props) {
         </div>
       </div>
     </div>
+    </>
   );
 }

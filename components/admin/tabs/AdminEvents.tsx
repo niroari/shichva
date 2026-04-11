@@ -13,6 +13,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import AdminGuide from "@/components/admin/AdminGuide";
 
 interface EventDoc {
   id: string;
@@ -157,6 +158,11 @@ export default function AdminEvents({ classId }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
+      <AdminGuide items={[
+        "הוסף אירועים, מבחנים, חגים וחופשות דרך הטופס",
+        "בחר תאריך התחלה ותאריך סיום לאירועים שנמשכים כמה ימים",
+        "לאחר שמירה האירוע מופיע אוטומטית בלוח האירועים",
+      ]} />
       {/* Add form */}
       <div className="admin-card">
         <h2 className="text-lg font-bold text-foreground mb-4">הוספת אירוע</h2>

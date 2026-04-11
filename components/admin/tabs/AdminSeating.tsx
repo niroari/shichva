@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import AdminGuide from "@/components/admin/AdminGuide";
 import {
   collection,
   query,
@@ -261,6 +262,13 @@ export default function AdminSeating({ classId }: Props) {
   const isDraggingAnything = !!dragSrc || !!dragFromSidebar;
 
   return (
+    <>
+    <AdminGuide items={[
+      "גרור שם תלמיד/ה מהרשימה בצד ושחרר על מושב פנוי",
+      "גרור בין שני מושבות כדי להחליף ביניהם",
+      'לחץ על "+" על מושב ריק כדי להקליד שם ישירות',
+      "לחץ × כדי לפנות מושב",
+    ]} />
     <div className="admin-schedule-layout">
       {/* ── Sidebar (right in RTL) ── */}
       <div className="admin-palette">
@@ -453,5 +461,6 @@ export default function AdminSeating({ classId }: Props) {
         </div>
       </div>
     </div>
+    </>
   );
 }

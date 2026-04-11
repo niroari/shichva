@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import AdminGuide from "@/components/admin/AdminGuide";
 import {
   collection,
   query,
@@ -190,6 +191,12 @@ export default function AdminEmergencySchedule({ classId }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
+      <AdminGuide items={[
+        'לחץ "הצג באתר" כדי שהמערכת תופיע לתלמידים',
+        "כשהיא מופעלת היא מוצגת מעל המערכת הרגילה",
+        'לחץ "הסתר מהאתר" כשחוזרים ללימודים רגילים',
+        "ניתן להעתיק את המערכת הרגילה כנקודת התחלה",
+      ]} />
       {/* ── Visibility toggle card ── */}
       <div
         className="admin-card flex items-center justify-between gap-4"
