@@ -130,10 +130,17 @@ export default function AdminEmergencySchedule({ classId }: Props) {
   // ── Drag & drop ──
   async function dropOnCell(rowId: string, day: Day) {
     if (!dragSubject) return;
-    const value = dragSubject === CLEAR ? "" : dragSubject;
     const key = `${rowId}-${day}`;
     setSavingKey(key);
     setDragOverKey("");
+    let value: string;
+    if (dragSubject === CLEAR) {
+      value = "";
+    } else {
+      const row = rows.find((r) => r.id === rowId);
+      const existing = row?.[day]?.trim() ?? "";
+      value = existing ? `${existing}, ${dragSubject}` : dragSubject;
+    }
     await updateDoc(doc(db, "classes", classId, "emergency_schedule", rowId), { [day]: value });
     setSavingKey("");
   }
