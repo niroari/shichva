@@ -168,6 +168,32 @@ export default function AdminSchedule({ classId }: Props) {
     setInitializing(false);
   }
 
+  // ── Sync times from kita2 ──
+  async function syncTimesFromKita2() {
+    const templateSnap = await getDocs(
+      query(collection(db, "classes", "kita2", "schedule"), orderBy("order"))
+    );
+    if (templateSnap.empty) {
+      alert("לא נמצאו נתונים בכיתה ז׳2");
+      return;
+    }
+    // Map order → time from kita2
+    const timeByOrder: Record<number, string> = {};
+    templateSnap.docs.forEach((d) => {
+      const data = d.data();
+      if (data.time) timeByOrder[data.order as number] = data.time as string;
+    });
+    // Update matching rows in this class
+    const batch = writeBatch(db);
+    rows.forEach((row) => {
+      const time = timeByOrder[row.order];
+      if (time !== undefined && time !== row.time) {
+        batch.update(doc(db, "classes", classId, "schedule", row.id), { time });
+      }
+    });
+    await batch.commit();
+  }
+
   // ── Add period / break row ──
   async function addPeriodRow() {
     const maxOrder = rows.length > 0 ? Math.max(...rows.map((r) => r.order)) : 0;
@@ -350,10 +376,18 @@ export default function AdminSchedule({ classId }: Props) {
           </tbody>
         </table>
 
-        {/* Add row buttons */}
-        <div className="flex gap-2 mt-3">
+        {/* Add row + sync buttons */}
+        <div className="flex gap-2 mt-3 flex-wrap">
           <button className="btn-edit" onClick={addPeriodRow}>+ הוסף שיעור</button>
           <button className="btn-cancel" onClick={addBreakRow}>+ הוסף הפסקה</button>
+          <button
+            className="btn-save"
+            onClick={syncTimesFromKita2}
+            style={{ marginRight: "auto" }}
+            title="העתק שעות מהמערכת של כיתה ז׳2"
+          >
+            קבל שעות מכיתה ז׳2
+          </button>
         </div>
       </div>
     </div>
