@@ -11,6 +11,7 @@ import {
   addDoc,
   doc,
   getDoc,
+  getDocs,
   setDoc,
   writeBatch,
 } from "firebase/firestore";
@@ -134,10 +135,35 @@ export default function AdminSchedule({ classId }: Props) {
   }
 
   // ── Initialize empty schedule ──
+  // Uses kita2's structure + times as a template, but clears all subject cells.
+  // Falls back to DEFAULT_ROWS if kita2 has no data.
   async function initializeSchedule() {
     setInitializing(true);
+    const templateSnap = await getDocs(
+      query(collection(db, "classes", "kita2", "schedule"), orderBy("order"))
+    );
+
     const batch = writeBatch(db);
-    DEFAULT_ROWS.forEach((row) => batch.set(doc(colRef), row));
+
+    if (!templateSnap.empty) {
+      templateSnap.docs.forEach((d) => {
+        const data = d.data();
+        const isBreak = data.type === "הפסקה";
+        batch.set(doc(colRef), {
+          order:  data.order  ?? 0,
+          period: data.period ?? "",
+          time:   data.time   ?? "",
+          type:   data.type   ?? "",
+          // Keep break label in sun; clear subject cells
+          sun: isBreak ? (data.sun || "הפסקה") : "",
+          mon: "", tue: "", wed: "", thu: "", fri: "",
+        });
+      });
+    } else {
+      // Fallback: default structure without times
+      DEFAULT_ROWS.forEach((row) => batch.set(doc(colRef), row));
+    }
+
     await batch.commit();
     setInitializing(false);
   }
