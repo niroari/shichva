@@ -861,3 +861,42 @@
     background-attachment: local, local;
   }
 }
+
+/* ── Emergency Schedule — public view ── */
+.emergency-section {
+  border-color: rgba(251, 146, 60, 0.25) !important;
+}
+
+.emergency-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(251, 146, 60, 0.12);
+  border: 1px solid rgba(251, 146, 60, 0.35);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  color: #fdba74;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.emergency-title {
+  color: #fb923c;
+}
+
+.emergency-table thead tr th {
+  background: rgba(251, 146, 60, 0.1) !important;
+  color: #fb923c !important;
+  border-bottom: 1px solid rgba(251, 146, 60, 0.3) !important;
+}
+
+.emergency-period {
+  color: #fb923c;
+}
+
+.emergency-break td {
+  background: rgba(251, 146, 60, 0.06) !important;
+  color: #fb923c !important;
+}
+}

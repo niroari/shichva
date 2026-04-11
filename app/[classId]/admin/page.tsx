@@ -10,6 +10,7 @@ import AdminEvents from "@/components/admin/tabs/AdminEvents";
 import AdminTeachers from "@/components/admin/tabs/AdminTeachers";
 import AdminSchedule from "@/components/admin/tabs/AdminSchedule";
 import AdminSeating from "@/components/admin/tabs/AdminSeating";
+import AdminEmergencySchedule from "@/components/admin/tabs/AdminEmergencySchedule";
 
 const classLabels: Record<string, string> = {
   kita1: "כיתה ז׳1",
@@ -25,6 +26,7 @@ const TABS = [
   { id: "teachers",      label: "מורים" },
   { id: "schedule",      label: "מערכת שעות" },
   { id: "seating",       label: "מקומות ישיבה" },
+  { id: "emergency",     label: "מערכת בחירום" },
 ];
 
 export default function AdminPage() {
@@ -99,7 +101,8 @@ export default function AdminPage() {
         {activeTab === "teachers" && <AdminTeachers classId={classId} />}
         {activeTab === "schedule" && <AdminSchedule classId={classId} />}
         {activeTab === "seating" && <AdminSeating classId={classId} />}
-        {activeTab !== "announcements" && activeTab !== "events" && activeTab !== "teachers" && activeTab !== "schedule" && activeTab !== "seating" && (
+        {activeTab === "emergency" && <AdminEmergencySchedule classId={classId} />}
+        {activeTab !== "announcements" && activeTab !== "events" && activeTab !== "teachers" && activeTab !== "schedule" && activeTab !== "seating" && activeTab !== "emergency" && (
           <p className="text-muted-foreground text-center py-12">
             טאב <strong className="text-foreground">{TABS.find(t => t.id === activeTab)?.label}</strong> — בקרוב
           </p>
