@@ -26,7 +26,7 @@ const TABS = [
   { id: "teachers",      label: "מורים" },
   { id: "schedule",      label: "מערכת שעות" },
   { id: "seating",       label: "מקומות ישיבה" },
-  { id: "emergency",     label: "מערכת בחירום" },
+  { id: "emergency",     label: "חירום" },
 ];
 
 export default function AdminPage() {
