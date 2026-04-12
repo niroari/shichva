@@ -94,6 +94,15 @@ export default function Seating({ classId }: { classId: string }) {
   if (rows.length === 0) return <p className="text-muted-foreground text-center py-5">אין נתונים</p>;
 
   return (
+    <div id="seating-print-area">
+      <div className="flex justify-end mb-3">
+        <button
+          onClick={() => window.print()}
+          className="seating-print-btn"
+        >
+          🖨️ הדפסה
+        </button>
+      </div>
     <div ref={classroomRef} className={`classroom${visible ? " visible" : ""}`}>
       <div className="classroom-inner">
         {rows.map((row, rowIdx) => {
@@ -122,6 +131,7 @@ export default function Seating({ classId }: { classId: string }) {
           <div className="classroom-board">לוח</div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

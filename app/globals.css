@@ -1146,3 +1146,80 @@
 .admin-gallery-thumb:hover .admin-gallery-delete {
   opacity: 1;
 }
+
+/* ── Seating print button ── */
+.seating-print-btn {
+  font-size: 0.82rem;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #94a3b8;
+  background: rgba(255,255,255,0.05);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.seating-print-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: #e2e8f0;
+}
+
+/* ── Print styles ── */
+@media print {
+  /* Hide everything except the seating chart */
+  body > *,
+  main > * {
+    display: none !important;
+  }
+
+  #seating-print-area,
+  #seating-print-area * {
+    display: revert !important;
+    visibility: visible !important;
+  }
+
+  #seating-print-area {
+    position: fixed !important;
+    inset: 0 !important;
+    padding: 24px !important;
+  }
+
+  .seating-print-btn {
+    display: none !important;
+  }
+
+  /* Black and white */
+  .classroom,
+  .classroom * {
+    color: #000 !important;
+    background: #fff !important;
+    border-color: #999 !important;
+    box-shadow: none !important;
+  }
+
+  .desk {
+    border: 1.5px solid #555 !important;
+    background: #fff !important;
+  }
+
+  .chair-circle {
+    border: 1.5px solid #555 !important;
+    background: #eee !important;
+  }
+
+  .classroom-board {
+    background: #222 !important;
+    color: #fff !important;
+    border-color: #222 !important;
+  }
+
+  .classroom-door {
+    border: 1.5px solid #555 !important;
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  .lidor-unit .desk {
+    background: #f0f0f0 !important;
+    border: 1.5px solid #555 !important;
+  }
+}
