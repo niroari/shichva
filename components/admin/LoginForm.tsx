@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { useParams } from "next/navigation";
 
 export default function LoginForm() {
+  const params = useParams();
+  const classId = params.classId as string;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -24,12 +27,12 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div data-class-theme={classId} className="min-h-screen flex items-center justify-center px-4">
       <div
         className="w-full max-w-sm rounded-2xl p-8"
         style={{
-          background: "rgba(17,16,42,0.8)",
-          border: "1px solid rgba(255,255,255,0.1)",
+          background: "var(--card-bg)",
+          border: "1px solid var(--card-border)",
           backdropFilter: "blur(12px)",
         }}
       >
@@ -75,7 +78,7 @@ export default function LoginForm() {
             type="submit"
             disabled={loading}
             className="mt-2 w-full py-2.5 rounded-lg font-bold text-sm transition-all disabled:opacity-50"
-            style={{ background: "rgba(124,58,237,0.8)", color: "white" }}
+            style={{ background: "var(--theme-accent)", color: "white" }}
           >
             {loading ? "מתחבר..." : "כניסה"}
           </button>

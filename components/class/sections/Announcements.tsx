@@ -62,7 +62,7 @@ export default function Announcements({ classId }: { classId: string }) {
           className={`border-r-[3px] rounded-xl px-4 py-3.5 transition-all duration-150 hover:-translate-x-1 ${
             ann.important
               ? "border-red-500 bg-red-500/[0.07]"
-              : "border-blue-500 bg-white/[0.04]"
+              : "border-[var(--theme-accent)] bg-[var(--card-bg)] border-y border-l border-y-[var(--card-border)] border-l-[var(--card-border)]"
           }`}
         >
           <div className="text-xs text-muted-foreground mb-1">{ann.date}</div>

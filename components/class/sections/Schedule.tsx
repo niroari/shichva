@@ -85,7 +85,7 @@ export default function Schedule({ classId }: { classId: string }) {
 
             return (
               <tr key={row.id}>
-                <td className="font-bold text-blue-400">{row.period}</td>
+                <td className="font-bold" style={{ color: "var(--theme-accent)" }}>{row.period}</td>
                 <td className="text-slate-400 text-xs whitespace-nowrap">{row.time}</td>
                 {DAYS.map((day) => (
                   <td key={day} className={!row[day] ? "text-slate-600" : ""}>

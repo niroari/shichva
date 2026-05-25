@@ -12,6 +12,7 @@ import AdminSchedule from "@/components/admin/tabs/AdminSchedule";
 import AdminSeating from "@/components/admin/tabs/AdminSeating";
 import AdminEmergencySchedule from "@/components/admin/tabs/AdminEmergencySchedule";
 import AdminGallery from "@/components/admin/tabs/AdminGallery";
+import ThemeInitializer from "@/components/class/ThemeInitializer";
 
 const classLabels: Record<string, string> = {
   kita1: "כיתה ז׳1",
@@ -50,67 +51,70 @@ export default function AdminPage() {
 
   if (!classLabel) return notFound();
   if (authLoading) return null;
-  if (!user) return <LoginForm />;
-
   return (
-    <div className="min-h-screen">
-      {/* Top bar */}
-      <div
-        className="sticky top-0 z-50 flex items-center justify-between px-6 py-3"
-        style={{
-          background: "rgba(10,8,30,0.92)",
-          backdropFilter: "blur(14px)",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
-        }}
-      >
-        <div className="flex items-center gap-3">
-          <span className="font-bold text-foreground">{classLabel}</span>
-          <span className="text-white/20">|</span>
-          <span className="text-muted-foreground text-sm">ניהול</span>
-        </div>
-        <button
-          onClick={() => signOut(auth)}
-          className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-full hover:bg-white/10"
-        >
-          יציאה
-        </button>
-      </div>
-
-      {/* Tab navigation */}
-      <div
-        className="flex gap-2 px-6 py-3 overflow-x-auto"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
-      >
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`text-sm px-4 py-2 rounded-lg whitespace-nowrap transition-all cursor-pointer ${
-              activeTab === tab.id
-                ? "bg-violet-600/30 text-violet-300 border border-violet-500/40"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-            }`}
+    <>
+      <ThemeInitializer classId={classId} />
+      {!user ? <LoginForm /> : (
+        <div data-class-theme={classId} className="min-h-screen">
+          {/* Top bar */}
+          <div
+            className="sticky top-0 z-50 flex items-center justify-between px-6 py-3"
+            style={{
+              background: "rgba(10,8,30,0.92)",
+              backdropFilter: "blur(14px)",
+              borderBottom: "1px solid rgba(255,255,255,0.07)",
+            }}
           >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+            <div className="flex items-center gap-3">
+              <span className="font-bold text-foreground">{classLabel}</span>
+              <span className="text-white/20">|</span>
+              <span className="text-muted-foreground text-sm">ניהול</span>
+            </div>
+            <button
+              onClick={() => signOut(auth)}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-full hover:bg-white/10"
+            >
+              יציאה
+            </button>
+          </div>
 
-      {/* Tab content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {activeTab === "announcements" && <AdminAnnouncements classId={classId} />}
-        {activeTab === "events" && <AdminEvents classId={classId} />}
-        {activeTab === "teachers" && <AdminTeachers classId={classId} />}
-        {activeTab === "schedule" && <AdminSchedule classId={classId} />}
-        {activeTab === "seating" && <AdminSeating classId={classId} />}
-        {activeTab === "emergency" && <AdminEmergencySchedule classId={classId} />}
-        {activeTab === "gallery" && <AdminGallery classId={classId} />}
-        {activeTab !== "announcements" && activeTab !== "events" && activeTab !== "teachers" && activeTab !== "schedule" && activeTab !== "seating" && activeTab !== "emergency" && activeTab !== "gallery" && (
-          <p className="text-muted-foreground text-center py-12">
-            טאב <strong className="text-foreground">{TABS.find(t => t.id === activeTab)?.label}</strong> — בקרוב
-          </p>
-        )}
-      </div>
-    </div>
+          {/* Tab navigation */}
+          <div
+            className="flex gap-2 px-6 py-3 overflow-x-auto"
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+          >
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`text-sm px-4 py-2 rounded-lg whitespace-nowrap transition-all cursor-pointer ${
+                  activeTab === tab.id
+                    ? "bg-violet-600/30 text-violet-300 border border-violet-500/40"
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
+          <div className="max-w-4xl mx-auto px-4 py-8">
+            {activeTab === "announcements" && <AdminAnnouncements classId={classId} />}
+            {activeTab === "events" && <AdminEvents classId={classId} />}
+            {activeTab === "teachers" && <AdminTeachers classId={classId} />}
+            {activeTab === "schedule" && <AdminSchedule classId={classId} />}
+            {activeTab === "seating" && <AdminSeating classId={classId} />}
+            {activeTab === "emergency" && <AdminEmergencySchedule classId={classId} />}
+            {activeTab === "gallery" && <AdminGallery classId={classId} />}
+            {activeTab !== "announcements" && activeTab !== "events" && activeTab !== "teachers" && activeTab !== "schedule" && activeTab !== "seating" && activeTab !== "emergency" && activeTab !== "gallery" && (
+              <p className="text-muted-foreground text-center py-12">
+                טאב <strong className="text-foreground">{TABS.find(t => t.id === activeTab)?.label}</strong> — בקרוב
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
