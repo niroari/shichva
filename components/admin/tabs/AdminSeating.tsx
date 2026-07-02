@@ -229,6 +229,55 @@ export default function AdminSeating({ classId }: Props) {
     });
   }
 
+  async function clearAllSeats() {
+    if (!confirm("האם אתה בטוח שברצונך להסיר את כל התלמידים ממקומות הישיבה?")) return;
+    const batch = writeBatch(db);
+    rows.forEach((row) => {
+      const updateData: Record<string, string> = {};
+      DESK_PAIRS.forEach(([r, l]) => {
+        updateData[r] = "";
+        updateData[l] = "";
+      });
+      batch.update(doc(db, "classes", classId, "seating", row.id), updateData);
+    });
+    await batch.commit();
+  }
+
+  async function randomizeSeating() {
+    if (roster.length === 0) {
+      alert("אין תלמידים ברשימה לשיבוץ");
+      return;
+    }
+    if (!confirm("האם לבצע חלוקה רנדומלית מחדש של כל התלמידים? המיקומים הנוכחיים יימחקו.")) return;
+
+    // Shuffle
+    const shuffled = [...roster].sort(() => Math.random() - 0.5);
+
+    const batch = writeBatch(db);
+    let studentIdx = 0;
+
+    rows.forEach((row) => {
+      const updateData: Record<string, string> = {};
+      DESK_PAIRS.forEach(([r, l]) => {
+        if (studentIdx < shuffled.length) {
+          updateData[r] = shuffled[studentIdx];
+          studentIdx++;
+        } else {
+          updateData[r] = "";
+        }
+        if (studentIdx < shuffled.length) {
+          updateData[l] = shuffled[studentIdx];
+          studentIdx++;
+        } else {
+          updateData[l] = "";
+        }
+      });
+      batch.update(doc(db, "classes", classId, "seating", row.id), updateData);
+    });
+
+    await batch.commit();
+  }
+
   async function initializeSeating() {
     const colRef = collection(db, "classes", classId, "seating");
     const emptyRow = { desk1_right: "", desk1_left: "", desk2_right: "", desk2_left: "", desk3_right: "", desk3_left: "", desk4_right: "", desk4_left: "" };
@@ -332,6 +381,23 @@ export default function AdminSeating({ classId }: Props) {
         <p className="text-muted-foreground text-sm text-center mb-4" style={{ fontSize: "0.78rem" }}>
           גרור תלמיד/ה מהרשימה לכיסא פנוי · גרור בין מושבות להחלפה · לחץ × להסרה
         </p>
+
+        <div className="flex justify-center gap-3 mb-6 flex-wrap">
+          <button
+            className="btn-primary"
+            onClick={randomizeSeating}
+            style={{ padding: "8px 16px", fontSize: "0.85rem" }}
+          >
+            🔀 חלוקה רנדומלית
+          </button>
+          <button
+            className="btn-danger"
+            onClick={clearAllSeats}
+            style={{ padding: "8px 16px", fontSize: "0.85rem" }}
+          >
+            🗑️ הסרת כל התלמידים
+          </button>
+        </div>
 
         {rows.map((row, rowIdx) => (
           <div key={row.id} className="admin-seating-row">
