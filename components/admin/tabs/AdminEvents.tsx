@@ -852,14 +852,32 @@ export default function AdminEvents({ classId }: Props) {
                   </p>
                 </div>
                 {importEvents.length > 0 && (
-                  <button
-                    onClick={handleImportSelected}
-                    disabled={importLoading}
-                    className="btn-primary"
-                    style={{ padding: "10px 24px" }}
-                  >
-                    {importLoading ? "מייבא..." : `💾 ייבא ${importEvents.filter(e => e.selected).length} אירועים מסומנים`}
-                  </button>
+                  <div className="flex gap-2 flex-wrap items-center">
+                    <button
+                      type="button"
+                      onClick={() => setImportEvents(importEvents.map(ev => ({ ...ev, selected: true })))}
+                      className="btn-edit"
+                      style={{ padding: "8px 16px", fontSize: "0.82rem" }}
+                    >
+                      ☑️ סמן הכל
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImportEvents(importEvents.map(ev => ({ ...ev, selected: false })))}
+                      className="btn-cancel"
+                      style={{ padding: "8px 16px", fontSize: "0.82rem" }}
+                    >
+                      ☐ נקה הכל
+                    </button>
+                    <button
+                      onClick={handleImportSelected}
+                      disabled={importLoading}
+                      className="btn-primary"
+                      style={{ padding: "10px 24px" }}
+                    >
+                      {importLoading ? "מייבא..." : `💾 ייבא ${importEvents.filter(e => e.selected).length} אירועים מסומנים`}
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -875,7 +893,7 @@ export default function AdminEvents({ classId }: Props) {
                         <th style={{ width: 40 }}>
                           <input
                             type="checkbox"
-                            className="cursor-pointer"
+                            className="cursor-pointer accent-[var(--theme-accent)] w-4 h-4"
                             checked={importEvents.length > 0 && importEvents.every(e => e.selected)}
                             onChange={(e) => {
                               const val = e.target.checked;
@@ -912,7 +930,7 @@ export default function AdminEvents({ classId }: Props) {
                             <td>
                               <input
                                 type="checkbox"
-                                className="cursor-pointer"
+                                className="cursor-pointer accent-[var(--theme-accent)] w-4 h-4"
                                 checked={ev.selected}
                                 onChange={(e) => {
                                   const updated = [...importEvents];
