@@ -270,7 +270,7 @@ export default function AdminSeating({ classId }: Props) {
     const batch = writeBatch(db);
     let studentIdx = 0;
 
-    rows.forEach((row) => {
+    [...rows].reverse().forEach((row) => {
       const updateData: Record<string, string> = {};
       let hasUpdate = false;
 
