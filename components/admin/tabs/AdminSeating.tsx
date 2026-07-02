@@ -244,35 +244,52 @@ export default function AdminSeating({ classId }: Props) {
   }
 
   async function randomizeSeating() {
-    if (roster.length === 0) {
-      alert("אין תלמידים ברשימה לשיבוץ");
+    if (unassigned.length === 0) {
+      alert("אין תלמידים לא משובצים לשיבוץ");
       return;
     }
-    if (!confirm("האם לבצע חלוקה רנדומלית מחדש של כל התלמידים? המיקומים הנוכחיים יימחקו.")) return;
 
-    // Shuffle
-    const shuffled = [...roster].sort(() => Math.random() - 0.5);
+    let emptySeatsCount = 0;
+    rows.forEach((row) => {
+      DESK_PAIRS.forEach(([r, l]) => {
+        if (!row[r]) emptySeatsCount++;
+        if (!row[l]) emptySeatsCount++;
+      });
+    });
+
+    if (emptySeatsCount === 0) {
+      alert("אין מקומות פנויים בכיתה");
+      return;
+    }
+
+    if (!confirm(`האם לשבץ באקראי את ${unassigned.length} התלמידים הלא משובצים במקומות הפנויים?`)) return;
+
+    // Shuffle only the unassigned students
+    const shuffledUnassigned = [...unassigned].sort(() => Math.random() - 0.5);
 
     const batch = writeBatch(db);
     let studentIdx = 0;
 
     rows.forEach((row) => {
       const updateData: Record<string, string> = {};
+      let hasUpdate = false;
+
       DESK_PAIRS.forEach(([r, l]) => {
-        if (studentIdx < shuffled.length) {
-          updateData[r] = shuffled[studentIdx];
+        if (!row[r] && studentIdx < shuffledUnassigned.length) {
+          updateData[r] = shuffledUnassigned[studentIdx];
           studentIdx++;
-        } else {
-          updateData[r] = "";
+          hasUpdate = true;
         }
-        if (studentIdx < shuffled.length) {
-          updateData[l] = shuffled[studentIdx];
+        if (!row[l] && studentIdx < shuffledUnassigned.length) {
+          updateData[l] = shuffledUnassigned[studentIdx];
           studentIdx++;
-        } else {
-          updateData[l] = "";
+          hasUpdate = true;
         }
       });
-      batch.update(doc(db, "classes", classId, "seating", row.id), updateData);
+
+      if (hasUpdate) {
+        batch.update(doc(db, "classes", classId, "seating", row.id), updateData);
+      }
     });
 
     await batch.commit();
