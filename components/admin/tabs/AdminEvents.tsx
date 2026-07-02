@@ -9,6 +9,9 @@ import {
   updateDoc,
   doc,
   Timestamp,
+  getDoc,
+  setDoc,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import AdminGuide from "@/components/admin/AdminGuide";
@@ -19,6 +22,16 @@ interface EventDoc {
   endDate?: Timestamp;
   title: string;
   time: string;
+  category: string;
+}
+
+interface ImportedEvent {
+  title: string;
+  startDate: string;
+  endDate?: string;
+  description?: string;
+  selected: boolean;
+  alreadyExists?: boolean;
   category: string;
 }
 
@@ -80,7 +93,16 @@ export default function AdminEvents({ classId }: Props) {
   const [loading, setLoading] = useState(true);
 
   // View state
-  const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
+  const [viewMode, setViewMode] = useState<"calendar" | "list" | "import">("calendar");
+
+  const [calendars, setCalendars] = useState<Array<{ id: string; name: string; url: string }>>([]);
+  const [calendarsLoading, setCalendarsLoading] = useState(true);
+  const [newCalName, setNewCalName] = useState("");
+  const [newCalUrl, setNewCalUrl] = useState("");
+  
+  const [importEvents, setImportEvents] = useState<ImportedEvent[]>([]);
+  const [importLoading, setImportLoading] = useState(false);
+  const [activeImportCalName, setActiveImportCalName] = useState("");
 
   // Calendar navigation states (using UTC dates to prevent timezone offsets)
   const [currentMonth, setCurrentMonth] = useState<Date>(() => {
@@ -118,6 +140,16 @@ export default function AdminEvents({ classId }: Props) {
       setLoading(false);
     });
     return () => unsub();
+  }, [classId]);
+
+  // Load saved calendars from Firestore
+  useEffect(() => {
+    getDoc(doc(db, "classes", classId, "meta", "calendars")).then((d) => {
+      if (d.exists()) {
+        setCalendars(d.data().list ?? []);
+      }
+      setCalendarsLoading(false);
+    });
   }, [classId]);
 
   // Keyboard navigation listener (close drawer on Escape)
@@ -215,6 +247,141 @@ export default function AdminEvents({ classId }: Props) {
     }
   }
 
+  // ── Google Calendar Helpers ──
+  async function saveCalendarsList(list: Array<{ id: string; name: string; url: string }>) {
+    await setDoc(doc(db, "classes", classId, "meta", "calendars"), { list });
+  }
+
+  async function handleAddCalendar(e: React.FormEvent) {
+    e.preventDefault();
+    const name = newCalName.trim();
+    let url = newCalUrl.trim();
+    if (!name || !url) return;
+
+    if (url.startsWith("webcal://")) {
+      url = "https://" + url.substring(9);
+    }
+
+    const newCal = {
+      id: Math.random().toString(36).substring(2, 9),
+      name,
+      url,
+    };
+
+    const updated = [...calendars, newCal];
+    setCalendars(updated);
+    setNewCalName("");
+    setNewCalUrl("");
+    await saveCalendarsList(updated);
+  }
+
+  async function handleDeleteCalendar(id: string) {
+    if (!confirm("האם להסיר את לוח השנה השמור?")) return;
+    const updated = calendars.filter((c) => c.id !== id);
+    setCalendars(updated);
+    await saveCalendarsList(updated);
+    setImportEvents([]);
+    setActiveImportCalName("");
+  }
+
+  async function handleFetchCalendarEvents(name: string, url: string) {
+    setImportLoading(true);
+    setImportEvents([]);
+    setActiveImportCalName(name);
+    try {
+      const res = await fetch("/api/import-calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to fetch calendar");
+      }
+      const data = await res.json();
+
+      const mapped: ImportedEvent[] = data.events.map((e: any) => {
+        const startD = new Date(e.startDate);
+        const exists = items.some((existing) => {
+          const d1 = existing.date.toDate();
+          const sameDate =
+            d1.getUTCFullYear() === startD.getUTCFullYear() &&
+            d1.getUTCMonth() === startD.getUTCMonth() &&
+            d1.getUTCDate() === startD.getUTCDate();
+          const sameTitle = existing.title.trim() === e.title.trim();
+          return sameDate && sameTitle;
+        });
+
+        let autoCategory = "אירוע";
+        const lowerTitle = e.title.toLowerCase();
+        if (lowerTitle.includes("מבחן")) autoCategory = "מבחן";
+        else if (lowerTitle.includes("בוחן")) autoCategory = "בוחן";
+        else if (lowerTitle.includes("טיול")) autoCategory = "טיול";
+        else if (
+          lowerTitle.includes("חג") ||
+          lowerTitle.includes("חופש") ||
+          lowerTitle.includes("ערב חג")
+        )
+          autoCategory = "חופש";
+
+        return {
+          title: e.title,
+          startDate: e.startDate,
+          endDate: e.endDate,
+          description: e.description,
+          selected: !exists,
+          alreadyExists: exists,
+          category: autoCategory,
+        };
+      });
+
+      setImportEvents(mapped);
+    } catch (err: any) {
+      alert(`שגיאה בטעינת לוח השנה: ${err.message}`);
+    } finally {
+      setImportLoading(false);
+    }
+  }
+
+  async function handleImportSelected() {
+    const selected = importEvents.filter((e) => e.selected);
+    if (selected.length === 0) {
+      alert("לא נבחרו אירועים לייבוא");
+      return;
+    }
+
+    if (!confirm(`לייבא ${selected.length} אירועים נבחרים ללוח השנה של האתר?`)) return;
+
+    setImportLoading(true);
+    try {
+      const batch = writeBatch(db);
+      selected.forEach((e) => {
+        const docRef = doc(collection(db, "classes", classId, "events"));
+        const data: any = {
+          title: e.title,
+          date: Timestamp.fromDate(new Date(e.startDate)),
+          category: e.category,
+          time: "",
+        };
+        if (e.endDate) {
+          data.endDate = Timestamp.fromDate(new Date(e.endDate));
+        } else {
+          data.endDate = null;
+        }
+        batch.set(docRef, data);
+      });
+      await batch.commit();
+      alert("האירועים יובאו בהצלחה!");
+      setImportEvents([]);
+      setActiveImportCalName("");
+      setViewMode("calendar");
+    } catch (err: any) {
+      alert(`שגיאה בשמירת האירועים: ${err.message}`);
+    } finally {
+      setImportLoading(false);
+    }
+  }
+
   // Set form values to edit an event
   function loadEventToForm(event: EventDoc) {
     setFormId(event.id);
@@ -249,7 +416,7 @@ export default function AdminEvents({ classId }: Props) {
         items={[
           "הוסף אירועים, מבחנים, חגים וחופשות ללוח השנה",
           "לחץ על תא בלוח השנה כדי להציג את אירועי היום ולהוסיף אירוע חדש",
-          "במידת הצורך ניתן לעבור לתצוגת רשימה קלאסית",
+          "ייבא אירועים חיצוניים מקישורי Google Calendar ושלוט במיקומם",
         ]}
       />
 
@@ -293,6 +460,25 @@ export default function AdminEvents({ classId }: Props) {
             }`}
           >
             רשימה
+          </button>
+          <button
+            onClick={() => setViewMode("import")}
+            style={
+              viewMode === "import"
+                ? {
+                    backgroundColor: "rgba(var(--theme-accent-rgb), 0.15)",
+                    borderColor: "rgba(var(--theme-accent-rgb), 0.45)",
+                    color: "var(--theme-accent)",
+                  }
+                : {}
+            }
+            className={`text-sm px-4 py-2 rounded-lg transition-all cursor-pointer font-medium border ${
+              viewMode === "import"
+                ? ""
+                : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5"
+            }`}
+          >
+            ייבוא Google Calendar
           </button>
         </div>
         <div className="text-xs text-muted-foreground hidden sm:block">
@@ -562,6 +748,229 @@ export default function AdminEvents({ classId }: Props) {
             )}
           </div>
         </>
+      )}
+
+      {/* ── IMPORT VIEW MODE ── */}
+      {viewMode === "import" && (
+        <div className="flex flex-col gap-6">
+          {/* Add Calendar Form */}
+          <div className="admin-card">
+            <h3 className="text-lg font-bold text-foreground mb-4">חיבור Google Calendar חדש</h3>
+            <form onSubmit={handleAddCalendar} className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-muted-foreground">שם לוח השנה</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="למשל: לוח אירועים שכבתי, מבחנים ח׳"
+                    value={newCalName}
+                    onChange={(e) => setNewCalName(e.target.value)}
+                    className="w-full bg-white/[0.06] border border-white/10 rounded-lg p-2.5 text-sm text-foreground outline-none focus:border-[var(--theme-accent)] transition-colors"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs text-muted-foreground">קישור iCal (מסתיים ב-ics.)</label>
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
+                    value={newCalUrl}
+                    onChange={(e) => setNewCalUrl(e.target.value)}
+                    dir="ltr"
+                    className="w-full bg-white/[0.06] border border-white/10 rounded-lg p-2.5 text-sm text-foreground outline-none focus:border-[var(--theme-accent)] transition-colors"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button type="submit" className="btn-primary" style={{ padding: "8px 24px" }}>
+                  + שמור לוח שנה
+                </button>
+              </div>
+            </form>
+            <div className="mt-4 p-3.5 bg-yellow-500/10 border border-yellow-500/25 rounded-xl text-xs text-yellow-200 leading-relaxed">
+              <strong>💡 היכן מוצאים את הקישור בגוגל קלנדר?</strong>
+              <br />
+              הכנס להגדרות לוח השנה שלך בגוגל &gt; גלול מטה לחלק <strong>"שילוב יומן" (Integrate calendar)</strong> &gt; העתק את הכתובת המופיעה תחת <strong>"כתובת סודית בפורמט iCal" (Secret address in iCal format)</strong> או <strong>"כתובת ציבורית בפורמט iCal" (Public address in iCal format)</strong>.
+            </div>
+          </div>
+
+          {/* Saved Calendars List */}
+          <div className="admin-card">
+            <h3 className="text-lg font-bold text-foreground mb-4">לוחות שנה מחוברים</h3>
+            {calendarsLoading ? (
+              <p className="text-muted-foreground text-sm">טוען לוחות שנה שמורים...</p>
+            ) : calendars.length === 0 ? (
+              <p className="text-muted-foreground text-sm">אין לוחות שנה שמורים עדיין.</p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {calendars.map((cal) => (
+                  <div
+                    key={cal.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white/[0.03] border border-white/5 rounded-xl hover:bg-white/[0.05] transition-colors"
+                  >
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground">{cal.name}</h4>
+                      <p className="text-xs text-muted-foreground mt-1 select-all font-mono ltr truncate max-w-md">
+                        {cal.url}
+                      </p>
+                    </div>
+                    <div className="flex gap-2.5">
+                      <button
+                        className="btn-primary"
+                        onClick={() => handleFetchCalendarEvents(cal.name, cal.url)}
+                        disabled={importLoading}
+                        style={{ padding: "6px 14px", fontSize: "0.82rem" }}
+                      >
+                        {importLoading && activeImportCalName === cal.name ? "טוען..." : "🔄 טען אירועים"}
+                      </button>
+                      <button
+                        className="btn-danger"
+                        onClick={() => handleDeleteCalendar(cal.id)}
+                        disabled={importLoading}
+                        style={{ padding: "6px 14px", fontSize: "0.82rem" }}
+                      >
+                        הסר
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Preview & Select fetched events */}
+          {(importLoading || importEvents.length > 0) && (
+            <div className="admin-card">
+              <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">
+                    אירועים מיומנים: <span className="text-[var(--theme-accent)]">{activeImportCalName}</span>
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    בחר את האירועים שברצונך לייבוא, קבע להם קטגוריה ולאחר מכן לחץ על ייבוא
+                  </p>
+                </div>
+                {importEvents.length > 0 && (
+                  <button
+                    onClick={handleImportSelected}
+                    disabled={importLoading}
+                    className="btn-primary"
+                    style={{ padding: "10px 24px" }}
+                  >
+                    {importLoading ? "מייבא..." : `💾 ייבא ${importEvents.filter(e => e.selected).length} אירועים מסומנים`}
+                  </button>
+                )}
+              </div>
+
+              {importLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-slate-400">טוען ומפענח אירועים מגוגל קלנדר...</p>
+                </div>
+              ) : (
+                <div className="admin-table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: 40 }}>
+                          <input
+                            type="checkbox"
+                            className="cursor-pointer"
+                            checked={importEvents.length > 0 && importEvents.every(e => e.selected)}
+                            onChange={(e) => {
+                              const val = e.target.checked;
+                              setImportEvents(importEvents.map(ev => ({ ...ev, selected: val })));
+                            }}
+                          />
+                        </th>
+                        <th style={{ width: 110 }}>תאריך</th>
+                        <th>כותרת אירוע</th>
+                        <th style={{ width: 130 }}>קטגוריה לשיבוץ</th>
+                        <th>סטטוס במערכת</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {importEvents.map((ev, index) => {
+                        const startD = new Date(ev.startDate);
+                        const endD = ev.endDate ? new Date(ev.endDate) : null;
+                        
+                        // Formatted date string for display
+                        const day = startD.getDate(), mon = startD.getMonth() + 1;
+                        let displayDate = `${day}.${mon}`;
+                        if (endD) {
+                          const d2 = endD.getDate(), m2 = endD.getMonth() + 1;
+                          displayDate = mon === m2 ? `${day}–${d2}.${mon}` : `${day}.${mon}–${d2}.${m2}`;
+                        }
+                        
+                        const displayMonth = `${MONTH_NAMES[startD.getMonth()]} ${startD.getFullYear()}`;
+
+                        return (
+                          <tr
+                            key={index}
+                            className={`transition-colors ${ev.alreadyExists ? "opacity-60 bg-white/[0.01]" : ""}`}
+                          >
+                            <td>
+                              <input
+                                type="checkbox"
+                                className="cursor-pointer"
+                                checked={ev.selected}
+                                onChange={(e) => {
+                                  const updated = [...importEvents];
+                                  updated[index].selected = e.target.checked;
+                                  setImportEvents(updated);
+                                }}
+                              />
+                            </td>
+                            <td className="cell-nowrap">
+                              <div className="cell-dim text-[11px] mb-0.5">{displayMonth}</div>
+                              <div className="font-semibold text-sm">{displayDate}</div>
+                            </td>
+                            <td>
+                              <div className="font-bold text-foreground text-sm">{ev.title}</div>
+                              {ev.description && (
+                                <div className="text-xs text-muted-foreground mt-0.5 max-w-sm truncate" title={ev.description}>
+                                  {ev.description}
+                                </div>
+                              )}
+                            </td>
+                            <td>
+                              <select
+                                value={ev.category}
+                                onChange={(e) => {
+                                  const updated = [...importEvents];
+                                  updated[index].category = e.target.value;
+                                  setImportEvents(updated);
+                                }}
+                                className="bg-white/[0.06] border border-white/10 rounded-lg p-1.5 text-xs text-foreground outline-none focus:border-[var(--theme-accent)] transition-colors w-full"
+                              >
+                                {CATEGORIES.map((c) => (
+                                  <option key={c} value={c} className="bg-slate-900">
+                                    {c}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="cell-nowrap">
+                              {ev.alreadyExists ? (
+                                <span className="text-xs text-yellow-400 bg-yellow-400/10 px-2 py-0.5 border border-yellow-400/20 rounded-full font-medium">
+                                  קיים כבר באתר ⚠️
+                                </span>
+                              ) : (
+                                <span className="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-0.5 border border-emerald-400/20 rounded-full font-medium">
+                                  חדש לייבוא ✓
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       )}
 
       {/* ── SLIDING SIDE DRAWER ── */}
