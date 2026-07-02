@@ -15,11 +15,11 @@ import AdminGallery from "@/components/admin/tabs/AdminGallery";
 import ThemeInitializer from "@/components/class/ThemeInitializer";
 
 const classLabels: Record<string, string> = {
-  kita1: "כיתה ז׳1",
-  kita2: "כיתה ז׳2",
-  kita3: "כיתה ז׳3",
-  kita4: "כיתה ז׳4",
-  kita5: "כיתה ז׳5",
+  kita1: "כיתה ח׳1",
+  kita2: "כיתה ח׳2",
+  kita3: "כיתה ח׳3",
+  kita4: "כיתה ח׳4",
+  kita5: "כיתה ח׳5",
 };
 
 const TABS = [

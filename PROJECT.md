@@ -1,8 +1,8 @@
-# PROJECT.md — שכבת ז׳ Website
+# PROJECT.md — שכבת ח׳ Website
 
 ## What This Is
-A grade-wide website for שכבת ז׳ at Ben Gurion Middle School, Herzliya.
-Built by Nir Oz-Ari (homeroom teacher, ז׳2).
+A grade-wide website for שכבת ח׳ at Ben Gurion Middle School, Herzliya.
+Built by Nir Oz-Ari (homeroom teacher, ח׳2).
 
 Each of the 5 classes gets its own page with identical sections, managed independently
 by its homeroom teacher via a password-protected admin panel.
@@ -14,11 +14,11 @@ by its homeroom teacher via a password-protected admin panel.
 - **Admin:** https://shichva.vercel.app/kita1/admin … /kita5/admin
 
 ## Classes
-- kita1 — ז׳1
-- kita2 — ז׳2 (Nir Oz-Ari, project owner)
-- kita3 — ז׳3
-- kita4 — ז׳4
-- kita5 — ז׳5
+- kita1 — ח׳1
+- kita2 — ח׳2 (Nir Oz-Ari, project owner)
+- kita3 — ח׳3
+- kita4 — ח׳4
+- kita5 — ח׳5
 
 ## Tech Stack
 - **Framework:** Next.js 16 (App Router), React, TypeScript
@@ -77,7 +77,7 @@ Each tab has a collapsible "מדריך מהיר" help card with plain-Hebrew ins
 | הודעות | Add/edit/delete announcements, important flag |
 | אירועים | Add/delete events with date range support |
 | מורים | Add/delete teachers |
-| מערכת שעות | Drag-and-drop subject palette, inline time editing, copy times from ז׳2 |
+| מערכת שעות | Drag-and-drop subject palette, inline time editing, copy times from ח׳2 |
 | מקומות ישיבה | Drag-and-drop seating grid, student roster sidebar |
 | חירום | Visibility toggle, drag-and-drop editor, copy-from-regular button |
 | גלריה | Drag-or-click upload, progress bar, delete thumbnails |
@@ -86,7 +86,7 @@ Each tab has a collapsible "מדריך מהיר" help card with plain-Hebrew ins
 - Dragging a subject onto an **empty** cell sets it
 - Dragging a subject onto a **filled** cell appends with ", " (supports double subjects)
 - Dragging "✕ מחק תא" onto any cell clears it
-- Schedule times can be copied from ז׳2 via "קבל שעות מלוח הצלצולים" button
+- Schedule times can be copied from ח׳2 via "קבל שעות מלוח הצלצולים" button
 
 ## Removing the Emergency Schedule Section
 When the emergency is over:

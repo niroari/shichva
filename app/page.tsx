@@ -1,11 +1,11 @@
 import Link from "next/link";
 
 const classes = [
-  { id: "kita1", label: "כיתה ז׳1", num: "1" },
-  { id: "kita2", label: "כיתה ז׳2", num: "2" },
-  { id: "kita3", label: "כיתה ז׳3", num: "3" },
-  { id: "kita4", label: "כיתה ז׳4", num: "4" },
-  { id: "kita5", label: "כיתה ז׳5", num: "5" },
+  { id: "kita1", label: "כיתה ח׳1", num: "1" },
+  { id: "kita2", label: "כיתה ח׳2", num: "2" },
+  { id: "kita3", label: "כיתה ח׳3", num: "3" },
+  { id: "kita4", label: "כיתה ח׳4", num: "4" },
+  { id: "kita5", label: "כיתה ח׳5", num: "5" },
 ];
 
 export default function Home() {
@@ -45,7 +45,7 @@ export default function Home() {
             <p className="text-sm text-muted-foreground tracking-widest uppercase" style={{ letterSpacing: "0.18em" }}>
               חטיבת הביניים בן גוריון הרצליה
             </p>
-            <h1 className="text-6xl font-bold text-foreground" style={{ letterSpacing: "-0.01em" }}>שכבת ז׳</h1>
+            <h1 className="text-6xl font-bold text-foreground" style={{ letterSpacing: "-0.01em" }}>שכבת ח׳</h1>
           </div>
         </div>
 

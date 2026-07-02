@@ -37,7 +37,7 @@ export default function LoginForm() {
         }}
       >
         <h1 className="text-2xl font-bold text-foreground mb-1 text-center">כניסת מנהל</h1>
-        <p className="text-muted-foreground text-sm text-center mb-8">פאנל ניהול שכבת ז׳</p>
+        <p className="text-muted-foreground text-sm text-center mb-8">פאנל ניהול שכבת ח׳</p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">

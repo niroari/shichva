@@ -87,7 +87,7 @@ export default function ClassNav({ classLabel }: { classLabel: string }) {
         href="/"
         className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 ml-2"
       >
-        ← שכבת ז׳
+        ← שכבת ח׳
       </Link>
 
       <span className="text-white/20 text-sm">|</span>

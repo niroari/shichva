@@ -182,7 +182,7 @@ export default function AdminSchedule({ classId }: Props) {
       query(collection(db, "classes", "kita2", "schedule"), orderBy("order"))
     );
     if (templateSnap.empty) {
-      alert("לא נמצאו נתונים בכיתה ז׳2");
+      alert("לא נמצאו נתונים בכיתה ח׳2");
       return;
     }
     // Map order → time from kita2

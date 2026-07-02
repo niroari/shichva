@@ -9,8 +9,8 @@ const alef = Alef({
 });
 
 export const metadata: Metadata = {
-  title: "שכבת ז׳ — בן גוריון הרצליה",
-  description: "אתר שכבת ז׳ בבית ספר בן גוריון הרצליה",
+  title: "שכבת ח׳ — בן גוריון הרצליה",
+  description: "אתר שכבת ח׳ בבית ספר בן גוריון הרצליה",
 };
 
 export default function RootLayout({
