@@ -113,7 +113,8 @@ export default function AdminAnnouncements({ classId }: Props) {
   }
 
   async function uploadImageFile(file: File, setProgress: (pct: number) => void) {
-    const storagePath = `classes/${classId}/announcements/${Date.now()}_${file.name}`;
+    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const storagePath = `classes/${classId}/gallery/announcement_${Date.now()}_${cleanName}`;
     const storageRef = ref(storage, storagePath);
     const task = uploadBytesResumable(storageRef, file);
 
@@ -124,10 +125,18 @@ export default function AdminAnnouncements({ classId }: Props) {
           const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
           setProgress(pct);
         },
-        reject,
+        (err) => {
+          console.error("Storage upload error:", err);
+          reject(err);
+        },
         async () => {
-          const url = await getDownloadURL(task.snapshot.ref);
-          resolve({ url, storagePath });
+          try {
+            const url = await getDownloadURL(task.snapshot.ref);
+            resolve({ url, storagePath });
+          } catch (err) {
+            console.error("Error getting download URL:", err);
+            reject(err);
+          }
         }
       );
     });
@@ -165,7 +174,8 @@ export default function AdminAnnouncements({ classId }: Props) {
       clearNewFile();
     } catch (err) {
       console.error("Error adding announcement:", err);
-      alert("שגיאה בהוספת ההודעה. נסה שוב.");
+      const msg = err instanceof Error ? err.message : "שגיאה לא ידועה";
+      alert(`שגיאה בהוספת ההודעה: ${msg}`);
     } finally {
       setSaving(false);
       setUploadProgress(null);
@@ -236,7 +246,8 @@ export default function AdminAnnouncements({ classId }: Props) {
       clearEditFile();
     } catch (err) {
       console.error("Error saving announcement edit:", err);
-      alert("שגיאה בעדכון ההודעה. נסה שוב.");
+      const msg = err instanceof Error ? err.message : "שגיאה לא ידועה";
+      alert(`שגיאה בעדכון ההודעה: ${msg}`);
     } finally {
       setEditSaving(false);
       setEditUploadProgress(null);
