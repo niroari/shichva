@@ -70,7 +70,7 @@ export default function Events({ classId }: { classId: string }) {
   const [allEvents, setAllEvents] = useState<ProcessedEvent[]>([]);
   const [monthGroups, setMonthGroups] = useState<MonthGroup[]>([]);
   const [monthIdx, setMonthIdx] = useState(0);
-  const showPast = false;
+  const [showPast, setShowPast] = useState(false);
   const [viewMode, setViewMode] = useState<"month" | "all" | "calendar">("month");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -170,13 +170,21 @@ export default function Events({ classId }: { classId: string }) {
 
   const visibleEventsForCurrentMonth = group ? group.events.filter(filterEvent) : [];
 
-  // Filter all events grouped by month for "all" mode
+  // Filter all events grouped by month for "all" mode (hiding past events by default)
   const allFilteredGroups = monthGroups
     .map((g) => ({
       label: g.label,
-      events: g.events.filter((e) => (activeCats ? activeCats.includes(e.cat) : true)),
+      events: g.events.filter((e) => {
+        if (!showPast && e.sortEnd < today) return false;
+        if (activeCats && !activeCats.includes(e.cat)) return false;
+        return true;
+      }),
     }))
     .filter((g) => g.events.length > 0);
+
+  const pastEventsCount = allEvents.filter(
+    (e) => e.sortEnd < today && (!activeCats || activeCats.includes(e.cat))
+  ).length;
 
   // Calendar cells generation (42 cells: 6 rows of 7 days)
   const todayStr = (() => {
@@ -347,9 +355,28 @@ export default function Events({ classId }: { classId: string }) {
 
       {/* ── ALL EVENTS VIEW ── */}
       {viewMode === "all" && (
-        <div className="max-w-xl mx-auto space-y-6">
+        <div className="max-w-xl mx-auto space-y-5">
+          {pastEventsCount > 0 && (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowPast((p) => !p)}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs border border-white/15 bg-white/[0.04] hover:bg-white/[0.09] text-slate-300 transition-all cursor-pointer shadow-xs"
+              >
+                <span>{showPast ? "👁️ הסתר אירועים שעברו" : "🕒 הצג גם אירועים שעברו"}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-slate-300 font-mono">
+                  {pastEventsCount}
+                </span>
+              </button>
+            </div>
+          )}
+
           {allFilteredGroups.length === 0 ? (
-            <p className="text-muted-foreground text-center py-5">אין אירועים להצגה</p>
+            <p className="text-muted-foreground text-center py-5">
+              {pastEventsCount > 0 && !showPast
+                ? "אין אירועים עתידיים להצגה (לחץ על הכפתור למעלה לצפייה באירועים שעברו)"
+                : "אין אירועים להצגה"}
+            </p>
           ) : (
             allFilteredGroups.map((g) => (
               <div key={g.label} className="space-y-2">
