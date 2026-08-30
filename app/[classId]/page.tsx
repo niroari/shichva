@@ -90,7 +90,10 @@ export default async function ClassPage({
         </section>
 
         <section id="teachers" className="py-16 border-t border-white/10">
-          <h2 className="text-2xl font-bold text-foreground mb-6">צוות המורים</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-1.5">צוות המורים</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-6">
+            כאשר מפורסם מספר הטלפון של מורה יש להקפיד על פנייה בשעות ראויות ולא יאוחר מהשעה 20:00
+          </p>
           <Teachers classId={classId} />
         </section>
 
