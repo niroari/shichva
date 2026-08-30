@@ -345,7 +345,7 @@ body[data-class-theme="kita5"] {
   .schedule-break td:nth-child(2) { font-style: normal; }
   .schedule-break:hover td { background: rgba(var(--theme-accent-rgb), 0.08) !important; }
 
-  /* Mobile: sticky first two columns */
+  /* Mobile: sticky first column only */
   @media (max-width: 640px) {
     .schedule-table { overflow: visible; }
 
@@ -355,24 +355,13 @@ body[data-class-theme="kita5"] {
       right: 0;
       z-index: 2;
       background: var(--background) !important;
+      border-left: 1px solid var(--table-td-border);
     }
     .schedule-table td:first-child {
       background: var(--background) !important;
     }
 
-    .schedule-table th:nth-child(2),
-    .schedule-table td:nth-child(2) {
-      position: sticky;
-      right: 44px;
-      z-index: 2;
-      background: var(--background) !important;
-    }
-    .schedule-table td:nth-child(2) {
-      background: var(--background) !important;
-    }
-
-    .schedule-break td:first-child,
-    .schedule-break td:nth-child(2) {
+    .schedule-break td:first-child {
       background: var(--background) !important;
     }
   }
