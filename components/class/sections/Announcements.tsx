@@ -92,9 +92,9 @@ export default function Announcements({ classId }: { classId: string }) {
             )}
 
             {ann.imageUrl && (
-              <div className="mt-3 flex justify-center w-full">
+              <div className="mt-2.5 flex justify-center w-full">
                 <div
-                  className="relative w-full max-w-md h-52 sm:h-64 rounded-xl overflow-hidden border border-black/10 dark:border-white/10 cursor-pointer group shadow-xs"
+                  className="relative w-full max-w-[220px] sm:max-w-[260px] h-28 sm:h-36 rounded-lg overflow-hidden border border-black/10 dark:border-white/10 cursor-pointer group shadow-xs"
                   onClick={() => setLightboxImage({ url: ann.imageUrl!, title: ann.title })}
                   title="לחץ להגדלה"
                 >
@@ -103,11 +103,11 @@ export default function Announcements({ classId }: { classId: string }) {
                     alt={ann.title}
                     fill
                     unoptimized
-                    sizes="(max-width: 768px) 100vw, 448px"
+                    sizes="(max-width: 768px) 220px, 260px"
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-xs">
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-[11px] px-2 py-0.5 rounded-full backdrop-blur-xs">
                       🔍 לחץ להגדלה
                     </span>
                   </div>
