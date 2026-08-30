@@ -53,7 +53,8 @@ function formatRange(start: Date, end?: Date): string {
 export default function Events({ classId }: { classId: string }) {
   const [monthGroups, setMonthGroups] = useState<MonthGroup[]>([]);
   const [monthIdx, setMonthIdx] = useState(0);
-  const [showPast, setShowPast] = useState(false);
+  const showPast = false;
+  const [viewMode, setViewMode] = useState<"month" | "all">("month");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -129,19 +130,29 @@ export default function Events({ classId }: { classId: string }) {
   const group = monthGroups[monthIdx];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const displayPast = showPast || group.allPast;
+  const displayPast = showPast || group?.allPast;
   const activeCats = activeFilter ? activeFilter.split(",") : null;
 
-  const visibleEvents = group.events.filter((e) => {
+  const filterEvent = (e: ProcessedEvent) => {
     if (!displayPast && e.sortEnd < today) return false;
     if (activeCats && !activeCats.includes(e.cat)) return false;
     return true;
-  });
+  };
+
+  const visibleEventsForCurrentMonth = group ? group.events.filter(filterEvent) : [];
+
+  // Filter all events grouped by month for "all" mode
+  const allFilteredGroups = monthGroups
+    .map((g) => ({
+      label: g.label,
+      events: g.events.filter((e) => (activeCats ? activeCats.includes(e.cat) : true)),
+    }))
+    .filter((g) => g.events.length > 0);
 
   return (
     <div>
       {/* Category legend / filter */}
-      <div className="flex flex-wrap gap-2 mb-5 justify-center">
+      <div className="flex flex-wrap gap-2 mb-4 justify-center">
         {CATEGORIES.map((c) => {
           const isActive = activeFilter === c.cats;
           const isDimmed = activeFilter !== null && activeFilter !== c.cats;
@@ -149,9 +160,9 @@ export default function Events({ classId }: { classId: string }) {
             <button
               key={c.cats}
               onClick={() => setActiveFilter(isActive ? null : c.cats)}
-              className={`flex items-center gap-1.5 text-sm px-3 py-1 rounded-full border transition-all duration-150 cursor-pointer select-none ${
+              className={`flex items-center gap-1.5 text-xs sm:text-sm px-3 py-1 rounded-full border transition-all duration-150 cursor-pointer select-none ${
                 isActive
-                  ? "border-white/25 bg-white/10 text-slate-100"
+                  ? "border-white/25 bg-white/10 text-slate-100 font-semibold"
                   : isDimmed
                   ? "border-transparent text-slate-400 opacity-30"
                   : "border-transparent text-slate-300 hover:opacity-80"
@@ -164,60 +175,140 @@ export default function Events({ classId }: { classId: string }) {
         })}
       </div>
 
-
-      {/* Month navigator — direction: ltr so ‹ is physically left (= forward) */}
-      <div
-        className="flex items-center justify-between max-w-xl mx-auto mb-4"
-        style={{ direction: "ltr" }}
-      >
-        <button
-          onClick={() => setMonthIdx((i) => i + 1)}
-          disabled={monthIdx === monthGroups.length - 1}
-          className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.13] bg-white/[0.07] text-slate-300 text-xl hover:bg-white/[0.14] hover:text-slate-100 transition-all disabled:opacity-20 disabled:cursor-default cursor-pointer"
-        >
-          ‹
-        </button>
-        <span className="font-bold text-foreground text-lg" style={{ direction: "rtl" }}>
-          {group.label}
-        </span>
-        <button
-          onClick={() => setMonthIdx((i) => i - 1)}
-          disabled={monthIdx === 0}
-          className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.13] bg-white/[0.07] text-slate-300 text-xl hover:bg-white/[0.14] hover:text-slate-100 transition-all disabled:opacity-20 disabled:cursor-default cursor-pointer"
-        >
-          ›
-        </button>
+      {/* View Mode Switcher (Month vs All) */}
+      <div className="flex justify-center mb-4">
+        <div className="inline-flex p-1 rounded-xl bg-white/[0.04] border border-white/10 text-xs">
+          <button
+            type="button"
+            onClick={() => setViewMode("month")}
+            className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+              viewMode === "month"
+                ? "bg-[rgba(var(--theme-accent-rgb),0.15)] border border-[rgba(var(--theme-accent-rgb),0.4)] text-[var(--theme-accent)] shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            📅 לפי חודש
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("all")}
+            className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+              viewMode === "all"
+                ? "bg-[rgba(var(--theme-accent-rgb),0.15)] border border-[rgba(var(--theme-accent-rgb),0.4)] text-[var(--theme-accent)] shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            📋 הצג הכל
+          </button>
+        </div>
       </div>
 
-      {/* Events list */}
-      {visibleEvents.length === 0 ? (
-        <p className="text-muted-foreground text-center py-5">אין אירועים לחודש זה</p>
-      ) : (
-        <div className="space-y-1 max-w-xl mx-auto">
-          {visibleEvents.map((e) => {
-            const isPast = e.sortEnd < today;
-            const style = getCatStyle(e.cat);
-            return (
-              <div
-                key={e.id}
-                className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.06] transition-colors ${
-                  isPast && displayPast ? "opacity-40" : ""
-                }`}
-              >
-                <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${style.dot}`} />
-                <span className="text-sm font-semibold text-slate-400 whitespace-nowrap min-w-[60px]">
-                  {e.display}
-                </span>
-                <span className="flex-1 text-slate-100 text-sm">{e.title}</span>
-                {e.time && (
-                  <span className="text-xs text-slate-500 whitespace-nowrap">{e.time}</span>
-                )}
-                <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap ${style.badge}`}>
-                  {style.label}
-                </span>
+      {/* ── BY-MONTH VIEW ── */}
+      {viewMode === "month" && (
+        <>
+          {/* Month navigator — direction: ltr so ‹ is physically left (= forward) */}
+          <div
+            className="flex items-center justify-between max-w-xl mx-auto mb-4"
+            style={{ direction: "ltr" }}
+          >
+            <button
+              onClick={() => setMonthIdx((i) => i + 1)}
+              disabled={monthIdx === monthGroups.length - 1}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.13] bg-white/[0.07] text-slate-300 text-xl hover:bg-white/[0.14] hover:text-slate-100 transition-all disabled:opacity-20 disabled:cursor-default cursor-pointer"
+            >
+              ‹
+            </button>
+            <span className="font-bold text-foreground text-lg" style={{ direction: "rtl" }}>
+              {group?.label}
+            </span>
+            <button
+              onClick={() => setMonthIdx((i) => i - 1)}
+              disabled={monthIdx === 0}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.13] bg-white/[0.07] text-slate-300 text-xl hover:bg-white/[0.14] hover:text-slate-100 transition-all disabled:opacity-20 disabled:cursor-default cursor-pointer"
+            >
+              ›
+            </button>
+          </div>
+
+          {/* Current Month Events list */}
+          {visibleEventsForCurrentMonth.length === 0 ? (
+            <p className="text-muted-foreground text-center py-5">אין אירועים לחודש זה</p>
+          ) : (
+            <div className="space-y-1.5 max-w-xl mx-auto">
+              {visibleEventsForCurrentMonth.map((e) => {
+                const isPast = e.sortEnd < today;
+                const style = getCatStyle(e.cat);
+                return (
+                  <div
+                    key={e.id}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.06] transition-colors ${
+                      isPast && displayPast ? "opacity-40" : ""
+                    }`}
+                  >
+                    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${style.dot}`} />
+                    <span className="text-sm font-semibold text-slate-400 whitespace-nowrap min-w-[60px]">
+                      {e.display}
+                    </span>
+                    <span className="flex-1 text-slate-100 text-sm">{e.title}</span>
+                    {e.time && (
+                      <span className="text-xs text-slate-500 whitespace-nowrap" dir="ltr">{e.time}</span>
+                    )}
+                    <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap ${style.badge}`}>
+                      {style.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── ALL EVENTS VIEW ── */}
+      {viewMode === "all" && (
+        <div className="max-w-xl mx-auto space-y-6">
+          {allFilteredGroups.length === 0 ? (
+            <p className="text-muted-foreground text-center py-5">אין אירועים להצגה</p>
+          ) : (
+            allFilteredGroups.map((g) => (
+              <div key={g.label} className="space-y-2">
+                <div className="flex items-center gap-2 pb-1 border-b border-white/10">
+                  <span className="font-bold text-sm text-[var(--theme-accent)]">
+                    {g.label}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    ({g.events.length})
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {g.events.map((e) => {
+                    const isPast = e.sortEnd < today;
+                    const style = getCatStyle(e.cat);
+                    return (
+                      <div
+                        key={e.id}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.06] transition-colors ${
+                          isPast ? "opacity-45" : ""
+                        }`}
+                      >
+                        <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${style.dot}`} />
+                        <span className="text-sm font-semibold text-slate-400 whitespace-nowrap min-w-[60px]">
+                          {e.display}
+                        </span>
+                        <span className="flex-1 text-slate-100 text-sm">{e.title}</span>
+                        {e.time && (
+                          <span className="text-xs text-slate-500 whitespace-nowrap" dir="ltr">{e.time}</span>
+                        )}
+                        <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap ${style.badge}`}>
+                          {style.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            );
-          })}
+            ))
+          )}
         </div>
       )}
     </div>
