@@ -35,7 +35,7 @@ export default function Announcements({ classId }: { classId: string }) {
       (snapshot) => {
         const data = snapshot.docs
           .map((doc) => ({ id: doc.id, ...doc.data() } as Announcement))
-          .sort((a, b) => Number(b.important) - Number(a.important));
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
         setItems(data);
         setLoading(false);
       },

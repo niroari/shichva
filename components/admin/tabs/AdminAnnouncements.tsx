@@ -11,6 +11,7 @@ import {
   doc,
   query,
   orderBy,
+  writeBatch,
 } from "firebase/firestore";
 import {
   ref,
@@ -71,6 +72,10 @@ export default function AdminAnnouncements({ classId }: Props) {
   const [editSaving, setEditSaving] = useState(false);
   const editFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Drag and drop ordering state
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
   const colRef = collection(db, "classes", classId, "announcements");
 
   useEffect(() => {
@@ -84,6 +89,63 @@ export default function AdminAnnouncements({ classId }: Props) {
     });
     return () => unsub();
   }, [classId]);
+
+  async function reorderList(fromIndex: number, toIndex: number) {
+    if (
+      fromIndex === toIndex ||
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex >= items.length ||
+      toIndex >= items.length
+    )
+      return;
+
+    const reordered = [...items];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+
+    // Update local state instantly
+    setItems(reordered);
+
+    // Batch update order field in Firestore
+    try {
+      const batch = writeBatch(db);
+      reordered.forEach((item, idx) => {
+        const docRef = doc(db, "classes", classId, "announcements", item.id);
+        batch.update(docRef, { order: idx + 1 });
+      });
+      await batch.commit();
+    } catch (err) {
+      console.error("Error saving announcement order:", err);
+    }
+  }
+
+  function handleDragStart(e: React.DragEvent, index: number) {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", index.toString());
+  }
+
+  function handleDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
+  }
+
+  async function handleDrop(e: React.DragEvent, targetIndex: number) {
+    e.preventDefault();
+    if (draggedIndex === null) return;
+    const from = draggedIndex;
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+    await reorderList(from, targetIndex);
+  }
+
+  function moveItem(index: number, direction: "up" | "down") {
+    const target = direction === "up" ? index - 1 : index + 1;
+    reorderList(index, target);
+  }
 
   function handleFileSelect(file: File | undefined) {
     if (!file) return;
@@ -586,7 +648,12 @@ export default function AdminAnnouncements({ classId }: Props) {
 
       {/* Existing list */}
       <div className="admin-card">
-        <h2 className="text-lg font-bold text-foreground mb-4">הודעות קיימות</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-bold text-foreground m-0">הודעות קיימות</h2>
+          <span className="text-xs text-muted-foreground hidden sm:inline-block">
+            💡 ניתן לגרור שורות כדי לשנות את סדר הופעתן באתר
+          </span>
+        </div>
         {loading ? (
           <p className="text-muted-foreground text-sm">טוען...</p>
         ) : items.length === 0 ? (
@@ -596,6 +663,7 @@ export default function AdminAnnouncements({ classId }: Props) {
             <table className="admin-table">
               <thead>
                 <tr>
+                  <th style={{ width: 45, textAlign: "center" }}>סדר</th>
                   <th style={{ width: 70 }}>תאריך</th>
                   <th style={{ width: 70 }}>קובץ / מדיה</th>
                   <th>כותרת</th>
@@ -605,16 +673,22 @@ export default function AdminAnnouncements({ classId }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {items.map((item) => {
+                {items.map((item, index) => {
                   const itemUrl = item.imageUrl || item.fileUrl;
                   const isPdfItem =
                     item.fileType === "pdf" ||
                     itemUrl?.includes(".pdf") ||
                     itemUrl?.startsWith("data:application/pdf");
 
+                  const isDragging = draggedIndex === index;
+                  const isDragOver = dragOverIndex === index && draggedIndex !== index;
+
                   return editId === item.id ? (
                     // Edit row
                     <tr key={item.id}>
+                      <td style={{ textAlign: "center", color: "var(--color-muted-foreground)" }}>
+                        {index + 1}
+                      </td>
                       <td>
                         <input
                           className="inline-input"
@@ -740,8 +814,51 @@ export default function AdminAnnouncements({ classId }: Props) {
                       </td>
                     </tr>
                   ) : (
-                    // Display row
-                    <tr key={item.id}>
+                    // Display row with drag-and-drop
+                    <tr
+                      key={item.id}
+                      draggable={!editId}
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragOver={(e) => handleDragOver(e, index)}
+                      onDrop={(e) => handleDrop(e, index)}
+                      className={`transition-colors ${
+                        isDragging
+                          ? "opacity-30 bg-purple-500/10"
+                          : isDragOver
+                          ? "bg-purple-500/20 outline outline-1 outline-purple-400"
+                          : ""
+                      }`}
+                    >
+                      <td className="cell-nowrap" style={{ textAlign: "center" }}>
+                        <div className="flex items-center justify-center gap-1">
+                          <span
+                            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground text-base select-none px-1"
+                            title="גרור לשינוי סדר"
+                          >
+                            ⠿
+                          </span>
+                          <div className="flex flex-col text-[8px] leading-none gap-0.5">
+                            <button
+                              type="button"
+                              disabled={index === 0}
+                              onClick={() => moveItem(index, "up")}
+                              className="hover:text-purple-400 disabled:opacity-20 disabled:hover:text-inherit transition-colors cursor-pointer"
+                              title="הזז למעלה"
+                            >
+                              ▲
+                            </button>
+                            <button
+                              type="button"
+                              disabled={index === items.length - 1}
+                              onClick={() => moveItem(index, "down")}
+                              className="hover:text-purple-400 disabled:opacity-20 disabled:hover:text-inherit transition-colors cursor-pointer"
+                              title="הזז למטה"
+                            >
+                              ▼
+                            </button>
+                          </div>
+                        </div>
+                      </td>
                       <td className="cell-nowrap cell-dim">{item.date}</td>
                       <td>
                         {itemUrl ? (
