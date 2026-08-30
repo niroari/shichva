@@ -18,6 +18,28 @@ interface Announcement {
   important: boolean;
 }
 
+function openPdf(url: string) {
+  if (!url) return;
+  if (url.startsWith("data:")) {
+    try {
+      const base64Data = url.split(",")[1];
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Uint8Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const blob = new Blob([byteNumbers], { type: "application/pdf" });
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, "_blank");
+    } catch (e) {
+      console.error("Failed to decode base64 PDF:", e);
+      window.open(url, "_blank");
+    }
+  } else {
+    window.open(url, "_blank");
+  }
+}
+
 export default function Announcements({ classId }: { classId: string }) {
   const [items, setItems] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,16 +128,15 @@ export default function Announcements({ classId }: { classId: string }) {
               if (isPdf) {
                 return (
                   <div className="mt-2.5 flex justify-center w-full">
-                    <a
-                      href={fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 dark:bg-purple-500/15 dark:hover:bg-purple-500/25 border border-purple-500/30 text-purple-700 dark:text-purple-200 transition-all text-xs font-semibold shadow-xs group"
+                    <button
+                      type="button"
+                      onClick={() => openPdf(fileUrl)}
+                      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 dark:bg-purple-500/15 dark:hover:bg-purple-500/25 border border-purple-500/30 text-purple-700 dark:text-purple-200 transition-all text-xs font-semibold shadow-xs group cursor-pointer"
                     >
                       <span className="text-base text-red-500">📄</span>
                       <span>{ann.fileName || "צפייה במכתב / מסמך מצורף (PDF)"}</span>
                       <span className="text-[10px] opacity-70 group-hover:opacity-100">↗</span>
-                    </a>
+                    </button>
                   </div>
                 );
               }

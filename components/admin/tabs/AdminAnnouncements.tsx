@@ -40,6 +40,28 @@ interface Props {
   classId: string;
 }
 
+function openPdf(url: string) {
+  if (!url) return;
+  if (url.startsWith("data:")) {
+    try {
+      const base64Data = url.split(",")[1];
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Uint8Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const blob = new Blob([byteNumbers], { type: "application/pdf" });
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, "_blank");
+    } catch (e) {
+      console.error("Failed to decode base64 PDF:", e);
+      window.open(url, "_blank");
+    }
+  } else {
+    window.open(url, "_blank");
+  }
+}
+
 export default function AdminAnnouncements({ classId }: Props) {
   const [items, setItems] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -715,15 +737,14 @@ export default function AdminAnnouncements({ classId }: Props) {
                             )
                           ) : editImageUrl && !editRemoveImage ? (
                             editFileType === "pdf" ? (
-                              <a
-                                href={editImageUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-lg hover:scale-110 transition-transform"
+                              <button
+                                type="button"
+                                onClick={() => openPdf(editImageUrl)}
+                                className="text-lg hover:scale-110 transition-transform cursor-pointer bg-transparent border-0 p-0"
                                 title={editFileName || "צפה ב-PDF"}
                               >
                                 📄
-                              </a>
+                              </button>
                             ) : (
                               <div className="relative w-10 h-10 rounded overflow-hidden border border-white/20">
                                 <Image
@@ -863,16 +884,15 @@ export default function AdminAnnouncements({ classId }: Props) {
                       <td>
                         {itemUrl ? (
                           isPdfItem ? (
-                            <a
-                              href={itemUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-500/10 text-red-400 text-xs hover:bg-red-500/20 border border-red-500/20"
+                            <button
+                              type="button"
+                              onClick={() => openPdf(itemUrl)}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-500/10 text-red-400 text-xs hover:bg-red-500/20 border border-red-500/20 cursor-pointer"
                               title={item.fileName || "פתח קובץ PDF"}
                             >
                               <span>📄</span>
                               <span className="text-[10px] font-bold">PDF</span>
-                            </a>
+                            </button>
                           ) : (
                             <div className="relative w-10 h-10 rounded-md overflow-hidden border border-white/10">
                               <Image
