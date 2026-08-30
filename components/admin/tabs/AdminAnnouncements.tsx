@@ -28,6 +28,9 @@ interface Announcement {
   title: string;
   body: string;
   imageUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileType?: "image" | "pdf";
   imageStoragePath?: string;
   important: boolean;
 }
@@ -47,6 +50,7 @@ export default function AdminAnnouncements({ classId }: Props) {
   const [newImportant, setNewImportant] = useState(false);
   const [newFile, setNewFile] = useState<File | null>(null);
   const [newFilePreview, setNewFilePreview] = useState<string | null>(null);
+  const [newFileType, setNewFileType] = useState<"image" | "pdf" | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,6 +62,8 @@ export default function AdminAnnouncements({ classId }: Props) {
   const [editBody, setEditBody] = useState("");
   const [editImportant, setEditImportant] = useState(false);
   const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
+  const [editFileName, setEditFileName] = useState<string | null>(null);
+  const [editFileType, setEditFileType] = useState<"image" | "pdf" | null>(null);
   const [editFile, setEditFile] = useState<File | null>(null);
   const [editFilePreview, setEditFilePreview] = useState<string | null>(null);
   const [editRemoveImage, setEditRemoveImage] = useState(false);
@@ -80,22 +86,49 @@ export default function AdminAnnouncements({ classId }: Props) {
   }, [classId]);
 
   function handleFileSelect(file: File | undefined) {
-    if (!file || !file.type.startsWith("image/")) return;
+    if (!file) return;
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    const isImg = file.type.startsWith("image/");
+    if (!isPdf && !isImg) {
+      alert("נא לבחור קובץ תמונה (JPG, PNG, WEBP) או קובץ PDF");
+      return;
+    }
+
     setNewFile(file);
-    const url = URL.createObjectURL(file);
-    setNewFilePreview(url);
+    if (isPdf) {
+      setNewFileType("pdf");
+      setNewFilePreview(null);
+    } else {
+      setNewFileType("image");
+      const url = URL.createObjectURL(file);
+      setNewFilePreview(url);
+    }
   }
 
   function handleEditFileSelect(file: File | undefined) {
-    if (!file || !file.type.startsWith("image/")) return;
+    if (!file) return;
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    const isImg = file.type.startsWith("image/");
+    if (!isPdf && !isImg) {
+      alert("נא לבחור קובץ תמונה (JPG, PNG, WEBP) או קובץ PDF");
+      return;
+    }
+
     setEditFile(file);
     setEditRemoveImage(false);
-    const url = URL.createObjectURL(file);
-    setEditFilePreview(url);
+    if (isPdf) {
+      setEditFileType("pdf");
+      setEditFilePreview(null);
+    } else {
+      setEditFileType("image");
+      const url = URL.createObjectURL(file);
+      setEditFilePreview(url);
+    }
   }
 
   function clearNewFile() {
     setNewFile(null);
+    setNewFileType(null);
     if (newFilePreview) {
       URL.revokeObjectURL(newFilePreview);
       setNewFilePreview(null);
@@ -105,6 +138,7 @@ export default function AdminAnnouncements({ classId }: Props) {
 
   function clearEditFile() {
     setEditFile(null);
+    setEditFileType(null);
     if (editFilePreview) {
       URL.revokeObjectURL(editFilePreview);
       setEditFilePreview(null);
@@ -177,45 +211,91 @@ export default function AdminAnnouncements({ classId }: Props) {
     });
   }
 
-  async function uploadOrEmbedImage(
+  async function readFileAsBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (err) => reject(err);
+    });
+  }
+
+  async function uploadOrEmbedFile(
     file: File,
     setProgress: (pct: number) => void
-  ): Promise<{ url: string; storagePath?: string }> {
-    // Step 1: Compress image on client
-    const { compressedFile, base64 } = await compressImageToFileOrBase64(file);
+  ): Promise<{ url: string; storagePath?: string; fileName: string; fileType: "image" | "pdf" }> {
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    const fileType: "image" | "pdf" = isPdf ? "pdf" : "image";
+    const fileName = file.name;
 
-    // Step 2: Try uploading to Firebase Storage
-    try {
-      const cleanName = compressedFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const storagePath = `classes/${classId}/gallery/announcement_${Date.now()}_${cleanName}`;
-      const storageRef = ref(storage, storagePath);
-      const task = uploadBytesResumable(storageRef, compressedFile);
+    if (isPdf) {
+      // Handle PDF
+      try {
+        const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const storagePath = `classes/${classId}/gallery/announcement_${Date.now()}_${cleanName}`;
+        const storageRef = ref(storage, storagePath);
+        const task = uploadBytesResumable(storageRef, file);
 
-      return await new Promise<{ url: string; storagePath: string }>((resolve, reject) => {
-        task.on(
-          "state_changed",
-          (snap) => {
-            const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
-            setProgress(pct);
-          },
-          (err) => {
-            console.warn("Storage upload error (quota or permission), falling back to optimized inline data URL:", err);
-            reject(err);
-          },
-          async () => {
-            try {
-              const url = await getDownloadURL(task.snapshot.ref);
-              resolve({ url, storagePath });
-            } catch (err) {
+        return await new Promise((resolve, reject) => {
+          task.on(
+            "state_changed",
+            (snap) => {
+              const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+              setProgress(pct);
+            },
+            (err) => {
+              console.warn("Storage upload error for PDF, falling back to embedded data URL:", err);
               reject(err);
+            },
+            async () => {
+              try {
+                const url = await getDownloadURL(task.snapshot.ref);
+                resolve({ url, storagePath, fileName, fileType });
+              } catch (err) {
+                reject(err);
+              }
             }
-          }
-        );
-      });
-    } catch (storageErr) {
-      console.warn("Using embedded image fallback due to storage issue:", storageErr);
-      // Fallback: Use compressed base64 data URL directly so teacher is never blocked
-      return { url: base64 };
+          );
+        });
+      } catch {
+        // Fallback: Embed PDF as Data URL
+        const base64 = await readFileAsBase64(file);
+        return { url: base64, fileName, fileType };
+      }
+    } else {
+      // Handle Image
+      const { compressedFile, base64 } = await compressImageToFileOrBase64(file);
+      try {
+        const cleanName = compressedFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const storagePath = `classes/${classId}/gallery/announcement_${Date.now()}_${cleanName}`;
+        const storageRef = ref(storage, storagePath);
+        const task = uploadBytesResumable(storageRef, compressedFile);
+
+        return await new Promise((resolve, reject) => {
+          task.on(
+            "state_changed",
+            (snap) => {
+              const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+              setProgress(pct);
+            },
+            (err) => {
+              console.warn("Storage upload error for image, falling back to embedded data URL:", err);
+              reject(err);
+            },
+            async () => {
+              try {
+                const url = await getDownloadURL(task.snapshot.ref);
+                resolve({ url, storagePath, fileName, fileType });
+              } catch (err) {
+                reject(err);
+              }
+            }
+          );
+        });
+      } catch {
+        // Fallback: Embed compressed image
+        return { url: base64, fileName, fileType };
+      }
     }
   }
 
@@ -225,12 +305,16 @@ export default function AdminAnnouncements({ classId }: Props) {
     setUploadProgress(null);
 
     let imageUrl: string | undefined = undefined;
+    let fileName: string | undefined = undefined;
+    let fileType: "image" | "pdf" | undefined = undefined;
     let imageStoragePath: string | undefined = undefined;
 
     try {
       if (newFile) {
-        const uploaded = await uploadOrEmbedImage(newFile, (pct) => setUploadProgress(pct));
+        const uploaded = await uploadOrEmbedFile(newFile, (pct) => setUploadProgress(pct));
         imageUrl = uploaded.url;
+        fileName = uploaded.fileName;
+        fileType = uploaded.fileType;
         imageStoragePath = uploaded.storagePath;
       }
 
@@ -241,7 +325,15 @@ export default function AdminAnnouncements({ classId }: Props) {
         title: newTitle.trim(),
         body: newBody.trim(),
         important: newImportant,
-        ...(imageUrl ? { imageUrl, ...(imageStoragePath ? { imageStoragePath } : {}) } : {}),
+        ...(imageUrl
+          ? {
+              imageUrl,
+              fileUrl: imageUrl,
+              fileName: fileName || "",
+              fileType: fileType || "image",
+              ...(imageStoragePath ? { imageStoragePath } : {}),
+            }
+          : {}),
       });
 
       setNewDate("");
@@ -265,7 +357,13 @@ export default function AdminAnnouncements({ classId }: Props) {
     setEditTitle(item.title);
     setEditBody(item.body);
     setEditImportant(item.important);
-    setEditImageUrl(item.imageUrl || null);
+    setEditImageUrl(item.imageUrl || item.fileUrl || null);
+    setEditFileName(item.fileName || null);
+    const isPdf =
+      item.fileType === "pdf" ||
+      (item.imageUrl || item.fileUrl)?.includes(".pdf") ||
+      (item.imageUrl || item.fileUrl)?.startsWith("data:application/pdf");
+    setEditFileType(isPdf ? "pdf" : item.imageUrl ? "image" : null);
     setEditRemoveImage(false);
     clearEditFile();
   }
@@ -281,13 +379,14 @@ export default function AdminAnnouncements({ classId }: Props) {
     setEditUploadProgress(null);
 
     try {
-      let finalImageUrl = item.imageUrl || null;
+      let finalImageUrl = item.imageUrl || item.fileUrl || null;
+      let finalFileName = item.fileName || null;
+      let finalFileType = item.fileType || (finalImageUrl ? "image" : null);
       let finalImageStoragePath = item.imageStoragePath || null;
 
       // Handle new file upload
       if (editFile) {
-        const uploaded = await uploadOrEmbedImage(editFile, (pct) => setEditUploadProgress(pct));
-        // If there was an existing old image file in storage, delete it
+        const uploaded = await uploadOrEmbedFile(editFile, (pct) => setEditUploadProgress(pct));
         if (item.imageStoragePath) {
           try {
             await deleteObject(ref(storage, item.imageStoragePath));
@@ -296,9 +395,10 @@ export default function AdminAnnouncements({ classId }: Props) {
           }
         }
         finalImageUrl = uploaded.url;
+        finalFileName = uploaded.fileName;
+        finalFileType = uploaded.fileType;
         finalImageStoragePath = uploaded.storagePath || null;
       } else if (editRemoveImage) {
-        // User requested removing the image
         if (item.imageStoragePath) {
           try {
             await deleteObject(ref(storage, item.imageStoragePath));
@@ -307,6 +407,8 @@ export default function AdminAnnouncements({ classId }: Props) {
           }
         }
         finalImageUrl = null;
+        finalFileName = null;
+        finalFileType = null;
         finalImageStoragePath = null;
       }
 
@@ -316,6 +418,9 @@ export default function AdminAnnouncements({ classId }: Props) {
         body: editBody.trim(),
         important: editImportant,
         imageUrl: finalImageUrl,
+        fileUrl: finalImageUrl,
+        fileName: finalFileName,
+        fileType: finalFileType,
         imageStoragePath: finalImageStoragePath,
       });
 
@@ -346,7 +451,7 @@ export default function AdminAnnouncements({ classId }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <AdminGuide items={[
-        "לחץ על הטופס למעלה כדי להוסיף הודעה חדשה (כולל אפשרות לצירוף תמונה)",
+        "לחץ על הטופס למעלה כדי להוסיף הודעה חדשה (כולל צירוף תמונה או מכתב ב-PDF)",
         'סמן "הודעה דחופה" כדי שתופיע עם רקע בולט',
         "לעריכת הודעה קיימת — לחץ על כפתור העריכה בשורה שלה",
         "למחיקה — לחץ על הכפתור האדום",
@@ -386,50 +491,57 @@ export default function AdminAnnouncements({ classId }: Props) {
             />
           </div>
 
-          {/* Media / Image Attachment */}
+          {/* Media / File Attachment */}
           <div className="form-group">
-            <label>צירוף תמונה (אופציונלי)</label>
-            {!newFilePreview ? (
+            <label>צירוף מדיה או מסמך (תמונה / קובץ PDF)</label>
+            {!newFile ? (
               <div
                 className="flex items-center gap-3 p-3 rounded-lg border border-dashed border-white/20 hover:border-purple-400/50 bg-white/[0.02] cursor-pointer transition-colors"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <span className="text-xl">📷</span>
+                <span className="text-xl">📎</span>
                 <span className="text-xs text-muted-foreground">
-                  לחץ לבחירת תמונה (JPG, PNG, WEBP)
+                  לחץ לבחירת תמונה (JPG, PNG, WEBP) או מכתב/קובץ PDF
                 </span>
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,application/pdf,.pdf"
                   style={{ display: "none" }}
                   onChange={(e) => handleFileSelect(e.target.files?.[0])}
                 />
               </div>
             ) : (
               <div className="flex items-center gap-3 p-2.5 rounded-lg border border-white/15 bg-white/[0.04]">
-                <div className="relative w-14 h-14 rounded-md overflow-hidden flex-shrink-0 border border-white/10">
-                  <Image
-                    src={newFilePreview}
-                    alt="תצוגה מקדימה"
-                    fill
-                    unoptimized
-                    className="object-cover"
-                  />
-                </div>
+                {newFileType === "pdf" ? (
+                  <div className="w-12 h-12 rounded-md bg-red-500/15 border border-red-500/30 flex items-center justify-center flex-shrink-0 text-xl text-red-400">
+                    📄
+                  </div>
+                ) : (
+                  <div className="relative w-14 h-14 rounded-md overflow-hidden flex-shrink-0 border border-white/10">
+                    <Image
+                      src={newFilePreview || ""}
+                      alt="תצוגה מקדימה"
+                      fill
+                      unoptimized
+                      className="object-cover"
+                    />
+                  </div>
+                )}
                 <div className="flex flex-col flex-1 min-w-0">
                   <span className="text-xs font-medium text-foreground truncate">
-                    {newFile?.name}
+                    {newFile.name}
                   </span>
                   <span className="text-[11px] text-muted-foreground">
-                    {newFile ? `${(newFile.size / 1024).toFixed(0)} KB` : ""}
+                    {newFileType === "pdf" ? "קובץ PDF · " : "תמונה · "}
+                    {`${(newFile.size / 1024).toFixed(0)} KB`}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={clearNewFile}
                   className="text-xs text-red-400 hover:text-red-300 p-1.5 rounded hover:bg-red-500/10 transition-colors"
-                  title="הסר תמונה"
+                  title="הסר קובץ"
                 >
                   ✕ הסר
                 </button>
@@ -439,7 +551,7 @@ export default function AdminAnnouncements({ classId }: Props) {
             {uploadProgress !== null && (
               <div className="flex flex-col gap-1 mt-1">
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>מעלה תמונה...</span>
+                  <span>מעלה קובץ...</span>
                   <span>{uploadProgress}%</span>
                 </div>
                 <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
@@ -485,7 +597,7 @@ export default function AdminAnnouncements({ classId }: Props) {
               <thead>
                 <tr>
                   <th style={{ width: 70 }}>תאריך</th>
-                  <th style={{ width: 60 }}>תמונה</th>
+                  <th style={{ width: 70 }}>קובץ / מדיה</th>
                   <th>כותרת</th>
                   <th>תוכן</th>
                   <th style={{ width: 60 }}>חשוב</th>
@@ -493,8 +605,14 @@ export default function AdminAnnouncements({ classId }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {items.map((item) =>
-                  editId === item.id ? (
+                {items.map((item) => {
+                  const itemUrl = item.imageUrl || item.fileUrl;
+                  const isPdfItem =
+                    item.fileType === "pdf" ||
+                    itemUrl?.includes(".pdf") ||
+                    itemUrl?.startsWith("data:application/pdf");
+
+                  return editId === item.id ? (
                     // Edit row
                     <tr key={item.id}>
                       <td>
@@ -507,26 +625,42 @@ export default function AdminAnnouncements({ classId }: Props) {
                       </td>
                       <td>
                         <div className="flex flex-col gap-1.5 items-center">
-                          {editFilePreview ? (
-                            <div className="relative w-10 h-10 rounded overflow-hidden border border-white/20">
-                              <Image
-                                src={editFilePreview}
-                                alt="חדש"
-                                fill
-                                unoptimized
-                                className="object-cover"
-                              />
-                            </div>
+                          {editFile ? (
+                            editFileType === "pdf" ? (
+                              <span className="text-lg" title="PDF חדש">📄</span>
+                            ) : (
+                              <div className="relative w-10 h-10 rounded overflow-hidden border border-white/20">
+                                <Image
+                                  src={editFilePreview || ""}
+                                  alt="חדש"
+                                  fill
+                                  unoptimized
+                                  className="object-cover"
+                                />
+                              </div>
+                            )
                           ) : editImageUrl && !editRemoveImage ? (
-                            <div className="relative w-10 h-10 rounded overflow-hidden border border-white/20">
-                              <Image
-                                src={editImageUrl}
-                                alt="קיים"
-                                fill
-                                unoptimized
-                                className="object-cover"
-                              />
-                            </div>
+                            editFileType === "pdf" ? (
+                              <a
+                                href={editImageUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-lg hover:scale-110 transition-transform"
+                                title={editFileName || "צפה ב-PDF"}
+                              >
+                                📄
+                              </a>
+                            ) : (
+                              <div className="relative w-10 h-10 rounded overflow-hidden border border-white/20">
+                                <Image
+                                  src={editImageUrl}
+                                  alt="קיים"
+                                  fill
+                                  unoptimized
+                                  className="object-cover"
+                                />
+                              </div>
+                            )
                           ) : (
                             <span className="text-xs text-muted-foreground">—</span>
                           )}
@@ -536,9 +670,9 @@ export default function AdminAnnouncements({ classId }: Props) {
                               onClick={() => editFileInputRef.current?.click()}
                               className="text-purple-400 hover:text-purple-300 underline"
                             >
-                              {editFilePreview || (editImageUrl && !editRemoveImage) ? "החלף" : "הוסף"}
+                              {editFile || (editImageUrl && !editRemoveImage) ? "החלף" : "הוסף"}
                             </button>
-                            {(editFilePreview || (editImageUrl && !editRemoveImage)) && (
+                            {(editFile || (editImageUrl && !editRemoveImage)) && (
                               <button
                                 type="button"
                                 onClick={() => {
@@ -554,7 +688,7 @@ export default function AdminAnnouncements({ classId }: Props) {
                           <input
                             ref={editFileInputRef}
                             type="file"
-                            accept="image/*"
+                            accept="image/*,application/pdf,.pdf"
                             style={{ display: "none" }}
                             onChange={(e) => handleEditFileSelect(e.target.files?.[0])}
                           />
@@ -610,17 +744,30 @@ export default function AdminAnnouncements({ classId }: Props) {
                     <tr key={item.id}>
                       <td className="cell-nowrap cell-dim">{item.date}</td>
                       <td>
-                        {item.imageUrl ? (
-                          <div className="relative w-10 h-10 rounded-md overflow-hidden border border-white/10">
-                            <Image
-                              src={item.imageUrl}
-                              alt={item.title}
-                              fill
-                              unoptimized
-                              sizes="40px"
-                              className="object-cover"
-                            />
-                          </div>
+                        {itemUrl ? (
+                          isPdfItem ? (
+                            <a
+                              href={itemUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-500/10 text-red-400 text-xs hover:bg-red-500/20 border border-red-500/20"
+                              title={item.fileName || "פתח קובץ PDF"}
+                            >
+                              <span>📄</span>
+                              <span className="text-[10px] font-bold">PDF</span>
+                            </a>
+                          ) : (
+                            <div className="relative w-10 h-10 rounded-md overflow-hidden border border-white/10">
+                              <Image
+                                src={itemUrl}
+                                alt={item.title}
+                                fill
+                                unoptimized
+                                sizes="40px"
+                                className="object-cover"
+                              />
+                            </div>
+                          )
                         ) : (
                           <span className="text-muted-foreground text-xs">—</span>
                         )}
@@ -638,8 +785,8 @@ export default function AdminAnnouncements({ classId }: Props) {
                         </div>
                       </td>
                     </tr>
-                  )
-                )}
+                  );
+                })}
               </tbody>
             </table>
           </div>

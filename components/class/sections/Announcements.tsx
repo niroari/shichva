@@ -12,6 +12,9 @@ interface Announcement {
   title: string;
   body?: string;
   imageUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileType?: "image" | "pdf";
   important: boolean;
 }
 
@@ -91,29 +94,56 @@ export default function Announcements({ classId }: { classId: string }) {
               </p>
             )}
 
-            {ann.imageUrl && (
-              <div className="mt-2.5 flex justify-center w-full">
-                <div
-                  className="relative w-full max-w-[220px] sm:max-w-[260px] h-28 sm:h-36 rounded-lg overflow-hidden border border-black/10 dark:border-white/10 cursor-pointer group shadow-xs"
-                  onClick={() => setLightboxImage({ url: ann.imageUrl!, title: ann.title })}
-                  title="לחץ להגדלה"
-                >
-                  <Image
-                    src={ann.imageUrl}
-                    alt={ann.title}
-                    fill
-                    unoptimized
-                    sizes="(max-width: 768px) 220px, 260px"
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-[11px] px-2 py-0.5 rounded-full backdrop-blur-xs">
-                      🔍 לחץ להגדלה
-                    </span>
+            {(() => {
+              const fileUrl = ann.imageUrl || ann.fileUrl;
+              if (!fileUrl) return null;
+
+              const isPdf =
+                ann.fileType === "pdf" ||
+                fileUrl.includes(".pdf") ||
+                fileUrl.startsWith("data:application/pdf");
+
+              if (isPdf) {
+                return (
+                  <div className="mt-2.5 flex justify-center w-full">
+                    <a
+                      href={fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 dark:bg-purple-500/15 dark:hover:bg-purple-500/25 border border-purple-500/30 text-purple-700 dark:text-purple-200 transition-all text-xs font-semibold shadow-xs group"
+                    >
+                      <span className="text-base text-red-500">📄</span>
+                      <span>{ann.fileName || "צפייה במכתב / מסמך מצורף (PDF)"}</span>
+                      <span className="text-[10px] opacity-70 group-hover:opacity-100">↗</span>
+                    </a>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="mt-2.5 flex justify-center w-full">
+                  <div
+                    className="relative w-full max-w-[220px] sm:max-w-[260px] h-28 sm:h-36 rounded-lg overflow-hidden border border-black/10 dark:border-white/10 cursor-pointer group shadow-xs"
+                    onClick={() => setLightboxImage({ url: fileUrl, title: ann.title })}
+                    title="לחץ להגדלה"
+                  >
+                    <Image
+                      src={fileUrl}
+                      alt={ann.title}
+                      fill
+                      unoptimized
+                      sizes="(max-width: 768px) 220px, 260px"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-[11px] px-2 py-0.5 rounded-full backdrop-blur-xs">
+                        🔍 לחץ להגדלה
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         ))}
       </div>
