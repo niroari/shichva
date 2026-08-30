@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { notFound, useParams } from "next/navigation";
+import { doc, onSnapshot } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
+import Link from "next/link";
 import LoginForm from "@/components/admin/LoginForm";
 import AdminAnnouncements from "@/components/admin/tabs/AdminAnnouncements";
 import AdminEvents from "@/components/admin/tabs/AdminEvents";
@@ -12,15 +13,8 @@ import AdminSchedule from "@/components/admin/tabs/AdminSchedule";
 import AdminSeating from "@/components/admin/tabs/AdminSeating";
 import AdminEmergencySchedule from "@/components/admin/tabs/AdminEmergencySchedule";
 import AdminGallery from "@/components/admin/tabs/AdminGallery";
+import AdminSettings, { ClassSettings } from "@/components/admin/tabs/AdminSettings";
 import ThemeInitializer from "@/components/class/ThemeInitializer";
-
-const classLabels: Record<string, string> = {
-  kita1: "כיתה ח׳1",
-  kita2: "כיתה ח׳2",
-  kita3: "כיתה ח׳3",
-  kita4: "כיתה ח׳4",
-  kita5: "כיתה ח׳5",
-};
 
 const TABS = [
   { id: "announcements", label: "הודעות" },
@@ -30,32 +24,58 @@ const TABS = [
   { id: "seating",       label: "מקומות ישיבה" },
   { id: "emergency",     label: "חירום" },
   { id: "gallery",       label: "גלריה" },
+  { id: "settings",      label: "⚙️ הגדרות" },
 ];
 
 export default function AdminPage() {
-  const params = useParams();
-  const classId = params.classId as string;
-  const classLabel = classLabels[classId];
+  const classId = process.env.NEXT_PUBLIC_CLASS_ID || "main";
 
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("announcements");
+  const [settings, setSettings] = useState<ClassSettings>({
+    className: "כיתה ח׳2",
+    theme: "kita2",
+  });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setAuthLoading(false);
     });
-    return () => unsubscribe();
-  }, []);
 
-  if (!classLabel) return notFound();
+    const unsubscribeSettings = onSnapshot(
+      doc(db, "classes", classId, "meta", "settings"),
+      (snap) => {
+        if (snap.exists()) {
+          const data = snap.data() as ClassSettings;
+          setSettings({
+            className: data.className || "כיתה ח׳2",
+            theme: data.theme || "kita2",
+            schoolName: data.schoolName || "חטיבת הביניים בן גוריון הרצליה",
+          });
+        }
+      },
+      (err) => console.error("Settings snapshot error:", err)
+    );
+
+    return () => {
+      unsubscribeAuth();
+      unsubscribeSettings();
+    };
+  }, [classId]);
+
   if (authLoading) return null;
+
+  const currentTheme = settings.theme || "kita2";
+
   return (
     <>
-      <ThemeInitializer classId={classId} />
-      {!user ? <LoginForm /> : (
-        <div data-class-theme={classId} className="min-h-screen">
+      <ThemeInitializer classId={currentTheme} />
+      {!user ? (
+        <LoginForm />
+      ) : (
+        <div data-class-theme={currentTheme} className="min-h-screen">
           {/* Top bar */}
           <div
             className="sticky top-0 z-50 flex items-center justify-between px-6 py-3"
@@ -66,16 +86,26 @@ export default function AdminPage() {
             }}
           >
             <div className="flex items-center gap-3">
-              <span className="font-bold text-foreground">{classLabel}</span>
+              <span className="font-bold text-foreground">{settings.className}</span>
               <span className="text-white/20">|</span>
-              <span className="text-muted-foreground text-sm">ניהול</span>
+              <span className="text-muted-foreground text-sm">פאנל ניהול</span>
             </div>
-            <button
-              onClick={() => signOut(auth)}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-full hover:bg-white/10"
-            >
-              יציאה
-            </button>
+
+            <div className="flex items-center gap-2">
+              <Link
+                href="/"
+                target="_blank"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-full hover:bg-white/10"
+              >
+                צפייה באתר ↗
+              </Link>
+              <button
+                onClick={() => signOut(auth)}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-full hover:bg-white/10"
+              >
+                יציאה
+              </button>
+            </div>
           </div>
 
           {/* Tab navigation */}
@@ -107,11 +137,7 @@ export default function AdminPage() {
             {activeTab === "seating" && <AdminSeating classId={classId} />}
             {activeTab === "emergency" && <AdminEmergencySchedule classId={classId} />}
             {activeTab === "gallery" && <AdminGallery classId={classId} />}
-            {activeTab !== "announcements" && activeTab !== "events" && activeTab !== "teachers" && activeTab !== "schedule" && activeTab !== "seating" && activeTab !== "emergency" && activeTab !== "gallery" && (
-              <p className="text-muted-foreground text-center py-12">
-                טאב <strong className="text-foreground">{TABS.find(t => t.id === activeTab)?.label}</strong> — בקרוב
-              </p>
-            )}
+            {activeTab === "settings" && <AdminSettings classId={classId} />}
           </div>
         </div>
       )}

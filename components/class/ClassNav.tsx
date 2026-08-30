@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 const sections = [
   { id: "announcements", label: "הודעות" },
@@ -16,7 +15,7 @@ function scrollTo(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 }
 
-export default function ClassNav({ classLabel }: { classLabel: string }) {
+export default function ClassNav({ classLabel }: { classLabel?: string }) {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -75,7 +74,8 @@ export default function ClassNav({ classLabel }: { classLabel: string }) {
   };
 
   return (
-    <nav className="fixed top-0 right-0 left-0 z-50 flex items-center justify-center gap-2 flex-wrap px-4 py-3 transition-colors duration-300"
+    <nav
+      className="fixed top-0 right-0 left-0 z-50 flex items-center justify-center gap-2 flex-wrap px-4 py-3 transition-colors duration-300"
       style={{
         background: "var(--nav-bg)",
         backdropFilter: "blur(14px)",
@@ -83,20 +83,20 @@ export default function ClassNav({ classLabel }: { classLabel: string }) {
         borderBottom: "1px solid var(--card-border)",
       }}
     >
-      <Link
-        href="/"
-        className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 ml-2"
-      >
-        ← שכבת ח׳
-      </Link>
-
-      <span className="text-white/20 text-sm">|</span>
+      {classLabel && (
+        <>
+          <span className="text-xs font-bold text-foreground px-2 hidden sm:inline-block">
+            {classLabel}
+          </span>
+          <span className="text-white/20 text-sm hidden sm:inline-block">|</span>
+        </>
+      )}
 
       {sections.map((s) => (
         <button
           key={s.id}
           onClick={() => scrollTo(s.id)}
-          className="text-sm text-muted-foreground hover:text-foreground px-4 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer"
+          className="text-sm text-muted-foreground hover:text-foreground px-3.5 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer"
         >
           {s.label}
         </button>
@@ -106,7 +106,7 @@ export default function ClassNav({ classLabel }: { classLabel: string }) {
 
       <button
         onClick={toggleTheme}
-        className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-all duration-200 mr-2 cursor-pointer flex items-center justify-center"
+        className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer flex items-center justify-center"
         title={isDark ? "מעבר למצב בהיר" : "מעבר למצב כהה"}
         aria-label={isDark ? "מעבר למצב בהיר" : "מעבר למצב כהה"}
       >

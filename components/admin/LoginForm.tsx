@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { useParams } from "next/navigation";
 
-export default function LoginForm() {
-  const params = useParams();
-  const classId = params.classId as string;
+interface Props {
+  classId?: string;
+}
+
+export default function LoginForm({ classId = process.env.NEXT_PUBLIC_CLASS_ID || "main" }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -36,8 +37,8 @@ export default function LoginForm() {
           backdropFilter: "blur(12px)",
         }}
       >
-        <h1 className="text-2xl font-bold text-foreground mb-1 text-center">כניסת מנהל</h1>
-        <p className="text-muted-foreground text-sm text-center mb-8">פאנל ניהול שכבת ח׳</p>
+        <h1 className="text-2xl font-bold text-foreground mb-1 text-center">כניסת מורה / מנהל</h1>
+        <p className="text-muted-foreground text-sm text-center mb-8">פאנל ניהול האתר</p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
@@ -77,8 +78,8 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 w-full py-2.5 rounded-lg font-bold text-sm transition-all disabled:opacity-50"
-            style={{ background: "var(--theme-accent)", color: "white" }}
+            className="mt-2 w-full py-2.5 rounded-lg font-bold text-sm transition-all disabled:opacity-50 cursor-pointer"
+            style={{ background: "var(--theme-accent, #7c3aed)", color: "white" }}
           >
             {loading ? "מתחבר..." : "כניסה"}
           </button>
