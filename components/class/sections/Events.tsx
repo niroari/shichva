@@ -50,19 +50,46 @@ function formatRange(start: Date, end?: Date): string {
   return m1 === m2 ? `${d1}–${d2}.${m1}` : `${d1}.${m1}–${d2}.${m2}`;
 }
 
+function getCategoryBadgeClass(category: string): string {
+  switch (category) {
+    case "מבחן":
+      return "bg-red-500/20 text-red-300 border-red-500/30";
+    case "בוחן":
+      return "bg-orange-500/20 text-orange-300 border-orange-500/30";
+    case "חג":
+    case "חופש":
+      return "bg-violet-500/20 text-violet-300 border-violet-500/30";
+    case "טיול":
+      return "bg-emerald-500/20 text-emerald-300 border-emerald-500/30";
+    default:
+      return "bg-blue-500/20 text-blue-300 border-blue-500/30";
+  }
+}
+
 export default function Events({ classId }: { classId: string }) {
+  const [allEvents, setAllEvents] = useState<ProcessedEvent[]>([]);
   const [monthGroups, setMonthGroups] = useState<MonthGroup[]>([]);
   const [monthIdx, setMonthIdx] = useState(0);
   const showPast = false;
-  const [viewMode, setViewMode] = useState<"month" | "all">("month");
+  const [viewMode, setViewMode] = useState<"month" | "all" | "calendar">("month");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  // Calendar view month state
+  const [calMonth, setCalMonth] = useState<Date>(() => {
+    const now = new Date();
+    return new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
+  });
+
+  // Selected date popup modal in calendar view
+  const [selectedCellDate, setSelectedCellDate] = useState<Date | null>(null);
 
   useEffect(() => {
     getDocs(collection(db, "classes", classId, "events"))
       .then((snapshot) => {
         if (snapshot.empty) {
+          setAllEvents([]);
           setMonthGroups([]);
           setLoading(false);
           return;
@@ -90,6 +117,8 @@ export default function Events({ classId }: { classId: string }) {
           })
           .filter((e) => e.title && !isNaN(e.date.getTime()))
           .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+        setAllEvents(events);
 
         const groupMap: Record<string, { label: string; events: ProcessedEvent[] }> = {};
         const groupOrder: string[] = [];
@@ -149,6 +178,47 @@ export default function Events({ classId }: { classId: string }) {
     }))
     .filter((g) => g.events.length > 0);
 
+  // Calendar cells generation (42 cells: 6 rows of 7 days)
+  const todayStr = (() => {
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, "0");
+    const d = String(today.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  })();
+
+  const startDayOfWeek = calMonth.getUTCDay();
+  const gridStartDate = new Date(
+    Date.UTC(
+      calMonth.getUTCFullYear(),
+      calMonth.getUTCMonth(),
+      1 - startDayOfWeek
+    )
+  );
+
+  const calCells: Date[] = [];
+  for (let i = 0; i < 42; i++) {
+    calCells.push(
+      new Date(
+        Date.UTC(
+          gridStartDate.getUTCFullYear(),
+          gridStartDate.getUTCMonth(),
+          gridStartDate.getUTCDate() + i
+        )
+      )
+    );
+  }
+
+  // Selected date events for modal
+  const selectedDateEvents = selectedCellDate
+    ? allEvents.filter((e) => {
+        if (activeCats && !activeCats.includes(e.cat)) return false;
+        const cellStr = selectedCellDate.toISOString().slice(0, 10);
+        const startStr = e.date.toISOString().slice(0, 10);
+        const endStr = e.sortEnd.toISOString().slice(0, 10);
+        return startStr <= cellStr && cellStr <= endStr;
+      })
+    : [];
+
   return (
     <div>
       {/* Category legend / filter */}
@@ -175,7 +245,7 @@ export default function Events({ classId }: { classId: string }) {
         })}
       </div>
 
-      {/* View Mode Switcher (Month vs All) */}
+      {/* View Mode Switcher (Month vs All vs Calendar) */}
       <div className="flex justify-center mb-4">
         <div className="inline-flex p-1 rounded-xl bg-white/[0.04] border border-white/10 text-xs">
           <button
@@ -199,6 +269,17 @@ export default function Events({ classId }: { classId: string }) {
             }`}
           >
             📋 הצג הכל
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("calendar")}
+            className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+              viewMode === "calendar"
+                ? "bg-[rgba(var(--theme-accent-rgb),0.15)] border border-[rgba(var(--theme-accent-rgb),0.4)] text-[var(--theme-accent)] shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🗓️ תצוגת לוח שנה
           </button>
         </div>
       </div>
@@ -308,6 +389,179 @@ export default function Events({ classId }: { classId: string }) {
                 </div>
               </div>
             ))
+          )}
+        </div>
+      )}
+
+      {/* ── CALENDAR TABLE VIEW ── */}
+      {viewMode === "calendar" && (
+        <div className="flex flex-col gap-4 max-w-2xl mx-auto">
+          {/* Month Controls */}
+          <div className="flex items-center justify-between" style={{ direction: "ltr" }}>
+            <button
+              onClick={() =>
+                setCalMonth(
+                  new Date(Date.UTC(calMonth.getUTCFullYear(), calMonth.getUTCMonth() + 1, 1))
+                )
+              }
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.13] bg-white/[0.07] text-slate-300 text-xl hover:bg-white/[0.14] hover:text-slate-100 transition-all cursor-pointer"
+            >
+              ‹
+            </button>
+            <span className="font-bold text-foreground text-lg" style={{ direction: "rtl" }}>
+              {MONTH_NAMES[calMonth.getUTCMonth()]} {calMonth.getUTCFullYear()}
+            </span>
+            <button
+              onClick={() =>
+                setCalMonth(
+                  new Date(Date.UTC(calMonth.getUTCFullYear(), calMonth.getUTCMonth() - 1, 1))
+                )
+              }
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.13] bg-white/[0.07] text-slate-300 text-xl hover:bg-white/[0.14] hover:text-slate-100 transition-all cursor-pointer"
+            >
+              ›
+            </button>
+          </div>
+
+          {/* Grid Container */}
+          <div className="w-full overflow-x-auto rounded-xl border border-white/10 bg-[var(--card-bg)] shadow-md">
+            <div className="min-w-[580px] grid grid-cols-7 border-collapse">
+              {/* Day Name Headers */}
+              {["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"].map((dayName) => (
+                <div
+                  key={dayName}
+                  className="p-2 text-center text-xs font-semibold text-muted-foreground border-b border-white/10 bg-white/[0.03]"
+                >
+                  {dayName}
+                </div>
+              ))}
+
+              {/* Day Grid Cells */}
+              {calCells.map((cellDate, idx) => {
+                const cellStr = cellDate.toISOString().slice(0, 10);
+                const isCurrentMonth = cellDate.getUTCMonth() === calMonth.getUTCMonth();
+                const isToday = cellStr === todayStr;
+
+                // Find events matching this day cell
+                const cellEvents = allEvents.filter((item) => {
+                  if (activeCats && !activeCats.includes(item.cat)) return false;
+                  const startStr = item.date.toISOString().slice(0, 10);
+                  const endStr = item.sortEnd.toISOString().slice(0, 10);
+                  return startStr <= cellStr && cellStr <= endStr;
+                });
+
+                return (
+                  <div
+                    key={cellStr}
+                    onClick={() => {
+                      if (cellEvents.length > 0) {
+                        setSelectedCellDate(cellDate);
+                      }
+                    }}
+                    className={`min-h-[85px] sm:min-h-[95px] flex flex-col justify-between p-1.5 sm:p-2 border-b border-r border-white/10 hover:bg-white/[0.04] transition-colors select-none ${
+                      isCurrentMonth ? "" : "opacity-25"
+                    } ${
+                      idx % 7 === 0 ? "border-l border-white/10" : ""
+                    } ${
+                      cellEvents.length > 0 ? "cursor-pointer" : ""
+                    } ${
+                      isToday ? "bg-[rgba(var(--theme-accent-rgb),0.07)]" : ""
+                    }`}
+                    style={
+                      isToday
+                        ? {
+                            outline: "1px solid var(--theme-accent)",
+                            zIndex: 1,
+                          }
+                        : {}
+                    }
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <span
+                        className={`text-xs font-bold w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full ${
+                          isToday ? "text-white" : "text-slate-300"
+                        }`}
+                        style={isToday ? { backgroundColor: "var(--theme-accent)" } : {}}
+                      >
+                        {cellDate.getUTCDate()}
+                      </span>
+                    </div>
+
+                    <div className="flex-1 flex flex-col gap-1 overflow-hidden">
+                      {cellEvents.slice(0, 2).map((event) => {
+                        const badgeClass = getCategoryBadgeClass(event.cat);
+                        return (
+                          <div
+                            key={event.id}
+                            className={`text-[9px] sm:text-[10px] px-1 py-0.5 rounded border truncate font-medium text-right leading-tight ${badgeClass}`}
+                            title={event.title}
+                          >
+                            {event.title}
+                          </div>
+                        );
+                      })}
+                      {cellEvents.length > 2 && (
+                        <div className="text-[9px] text-[var(--theme-accent)] text-center font-bold">
+                          +{cellEvents.length - 2} נוספים
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Selected Date Popup Modal */}
+          {selectedCellDate && (
+            <div
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+              onClick={() => setSelectedCellDate(null)}
+            >
+              <div
+                className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-5 max-w-sm w-full shadow-2xl space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <div className="font-bold text-foreground text-base">
+                    אירועי {selectedCellDate.getUTCDate()} ב{MONTH_NAMES[selectedCellDate.getUTCMonth()]}
+                  </div>
+                  <button
+                    onClick={() => setSelectedCellDate(null)}
+                    className="text-muted-foreground hover:text-foreground text-sm p-1 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="space-y-2 max-h-72 overflow-y-auto">
+                  {selectedDateEvents.map((e) => {
+                    const style = getCatStyle(e.cat);
+                    return (
+                      <div
+                        key={e.id}
+                        className="p-3 rounded-xl bg-white/[0.04] border border-white/10 space-y-1"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-bold text-sm text-foreground">{e.title}</span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badge}`}>
+                            {style.label}
+                          </span>
+                        </div>
+                        {e.time && (
+                          <div className="text-xs text-muted-foreground" dir="ltr" style={{ textAlign: "right" }}>
+                            ⏰ {e.time}
+                          </div>
+                        )}
+                        <div className="text-[11px] text-slate-400">
+                          📅 {e.display}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           )}
         </div>
       )}
