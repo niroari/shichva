@@ -112,34 +112,111 @@ export default function AdminAnnouncements({ classId }: Props) {
     if (editFileInputRef.current) editFileInputRef.current.value = "";
   }
 
-  async function uploadImageFile(file: File, setProgress: (pct: number) => void) {
-    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const storagePath = `classes/${classId}/gallery/announcement_${Date.now()}_${cleanName}`;
-    const storageRef = ref(storage, storagePath);
-    const task = uploadBytesResumable(storageRef, file);
-
-    return new Promise<{ url: string; storagePath: string }>((resolve, reject) => {
-      task.on(
-        "state_changed",
-        (snap) => {
-          const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
-          setProgress(pct);
-        },
-        (err) => {
-          console.error("Storage upload error:", err);
-          reject(err);
-        },
-        async () => {
-          try {
-            const url = await getDownloadURL(task.snapshot.ref);
-            resolve({ url, storagePath });
-          } catch (err) {
-            console.error("Error getting download URL:", err);
-            reject(err);
+  async function compressImageToFileOrBase64(
+    file: File,
+    maxWidth = 1000,
+    quality = 0.75
+  ): Promise<{ compressedFile: File; base64: string }> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new window.Image();
+        img.src = e.target?.result as string;
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxWidth || height > maxWidth) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxWidth) / height);
+              height = maxWidth;
+            }
           }
-        }
-      );
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve({ compressedFile: file, base64: e.target?.result as string });
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL("image/webp", quality);
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compFile = new File(
+                  [blob],
+                  file.name.replace(/\.[^/.]+$/, ".webp"),
+                  {
+                    type: "image/webp",
+                    lastModified: Date.now(),
+                  }
+                );
+                resolve({ compressedFile: compFile, base64: dataUrl });
+              } else {
+                resolve({ compressedFile: file, base64: dataUrl });
+              }
+            },
+            "image/webp",
+            quality
+          );
+        };
+        img.onerror = () => {
+          resolve({ compressedFile: file, base64: e.target?.result as string });
+        };
+      };
+      reader.onerror = () => {
+        resolve({ compressedFile: file, base64: "" });
+      };
     });
+  }
+
+  async function uploadOrEmbedImage(
+    file: File,
+    setProgress: (pct: number) => void
+  ): Promise<{ url: string; storagePath?: string }> {
+    // Step 1: Compress image on client
+    const { compressedFile, base64 } = await compressImageToFileOrBase64(file);
+
+    // Step 2: Try uploading to Firebase Storage
+    try {
+      const cleanName = compressedFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const storagePath = `classes/${classId}/gallery/announcement_${Date.now()}_${cleanName}`;
+      const storageRef = ref(storage, storagePath);
+      const task = uploadBytesResumable(storageRef, compressedFile);
+
+      return await new Promise<{ url: string; storagePath: string }>((resolve, reject) => {
+        task.on(
+          "state_changed",
+          (snap) => {
+            const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+            setProgress(pct);
+          },
+          (err) => {
+            console.warn("Storage upload error (quota or permission), falling back to optimized inline data URL:", err);
+            reject(err);
+          },
+          async () => {
+            try {
+              const url = await getDownloadURL(task.snapshot.ref);
+              resolve({ url, storagePath });
+            } catch (err) {
+              reject(err);
+            }
+          }
+        );
+      });
+    } catch (storageErr) {
+      console.warn("Using embedded image fallback due to storage issue:", storageErr);
+      // Fallback: Use compressed base64 data URL directly so teacher is never blocked
+      return { url: base64 };
+    }
   }
 
   async function handleAdd(e: React.FormEvent) {
@@ -152,7 +229,7 @@ export default function AdminAnnouncements({ classId }: Props) {
 
     try {
       if (newFile) {
-        const uploaded = await uploadImageFile(newFile, (pct) => setUploadProgress(pct));
+        const uploaded = await uploadOrEmbedImage(newFile, (pct) => setUploadProgress(pct));
         imageUrl = uploaded.url;
         imageStoragePath = uploaded.storagePath;
       }
@@ -164,7 +241,7 @@ export default function AdminAnnouncements({ classId }: Props) {
         title: newTitle.trim(),
         body: newBody.trim(),
         important: newImportant,
-        ...(imageUrl ? { imageUrl, imageStoragePath } : {}),
+        ...(imageUrl ? { imageUrl, ...(imageStoragePath ? { imageStoragePath } : {}) } : {}),
       });
 
       setNewDate("");
@@ -209,7 +286,7 @@ export default function AdminAnnouncements({ classId }: Props) {
 
       // Handle new file upload
       if (editFile) {
-        const uploaded = await uploadImageFile(editFile, (pct) => setEditUploadProgress(pct));
+        const uploaded = await uploadOrEmbedImage(editFile, (pct) => setEditUploadProgress(pct));
         // If there was an existing old image file in storage, delete it
         if (item.imageStoragePath) {
           try {
@@ -219,7 +296,7 @@ export default function AdminAnnouncements({ classId }: Props) {
           }
         }
         finalImageUrl = uploaded.url;
-        finalImageStoragePath = uploaded.storagePath;
+        finalImageStoragePath = uploaded.storagePath || null;
       } else if (editRemoveImage) {
         // User requested removing the image
         if (item.imageStoragePath) {
@@ -336,6 +413,7 @@ export default function AdminAnnouncements({ classId }: Props) {
                     src={newFilePreview}
                     alt="תצוגה מקדימה"
                     fill
+                    unoptimized
                     className="object-cover"
                   />
                 </div>
@@ -435,6 +513,7 @@ export default function AdminAnnouncements({ classId }: Props) {
                                 src={editFilePreview}
                                 alt="חדש"
                                 fill
+                                unoptimized
                                 className="object-cover"
                               />
                             </div>
@@ -444,6 +523,7 @@ export default function AdminAnnouncements({ classId }: Props) {
                                 src={editImageUrl}
                                 alt="קיים"
                                 fill
+                                unoptimized
                                 className="object-cover"
                               />
                             </div>
@@ -536,6 +616,7 @@ export default function AdminAnnouncements({ classId }: Props) {
                               src={item.imageUrl}
                               alt={item.title}
                               fill
+                              unoptimized
                               sizes="40px"
                               className="object-cover"
                             />

@@ -101,6 +101,7 @@ export default function Announcements({ classId }: { classId: string }) {
                   src={ann.imageUrl}
                   alt={ann.title}
                   fill
+                  unoptimized
                   sizes="(max-width: 768px) 100vw, 384px"
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
@@ -131,6 +132,7 @@ export default function Announcements({ classId }: { classId: string }) {
                 src={lightboxImage.url}
                 alt={lightboxImage.title}
                 fill
+                unoptimized
                 sizes="90vw"
                 className="object-contain"
               />
