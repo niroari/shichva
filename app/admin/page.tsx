@@ -13,8 +13,10 @@ import AdminSchedule from "@/components/admin/tabs/AdminSchedule";
 import AdminSeating from "@/components/admin/tabs/AdminSeating";
 import AdminEmergencySchedule from "@/components/admin/tabs/AdminEmergencySchedule";
 import AdminGallery from "@/components/admin/tabs/AdminGallery";
+import AdminUsers from "@/components/admin/tabs/AdminUsers";
 import AdminSettings, { ClassSettings } from "@/components/admin/tabs/AdminSettings";
 import ThemeInitializer from "@/components/class/ThemeInitializer";
+import { collection, query, where, onSnapshot as onSnapshotFirestore } from "firebase/firestore";
 
 const TABS = [
   { id: "announcements", label: "הודעות" },
@@ -24,6 +26,7 @@ const TABS = [
   { id: "seating",       label: "מקומות ישיבה" },
   { id: "emergency",     label: "חירום" },
   { id: "gallery",       label: "גלריה" },
+  { id: "users",         label: "👥 משתמשים" },
   { id: "settings",      label: "⚙️ הגדרות" },
 ];
 
@@ -33,6 +36,7 @@ export default function AdminPage() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("announcements");
+  const [pendingCount, setPendingCount] = useState(0);
   const [settings, setSettings] = useState<ClassSettings>({
     className: "כיתה ח׳2",
     theme: "kita2",
@@ -59,9 +63,19 @@ export default function AdminPage() {
       (err) => console.error("Settings snapshot error:", err)
     );
 
+    const qPending = query(collection(db, "users"), where("status", "==", "pending"));
+    const unsubscribePending = onSnapshotFirestore(
+      qPending,
+      (snap) => {
+        setPendingCount(snap.size);
+      },
+      (err) => console.warn("Pending users snapshot warning:", err)
+    );
+
     return () => {
       unsubscribeAuth();
       unsubscribeSettings();
+      unsubscribePending();
     };
   }, [classId]);
 
@@ -117,13 +131,18 @@ export default function AdminPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`text-sm px-4 py-2 rounded-lg whitespace-nowrap transition-all cursor-pointer ${
+                className={`text-sm px-4 py-2 rounded-lg whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeTab === tab.id
                     ? "bg-violet-600/30 text-violet-300 border border-violet-500/40"
                     : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                 }`}
               >
-                {tab.label}
+                <span>{tab.label}</span>
+                {tab.id === "users" && pendingCount > 0 && (
+                  <span className="px-1.5 py-0.2 bg-amber-500 text-black font-bold text-[10px] rounded-full animate-pulse">
+                    {pendingCount}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -137,6 +156,7 @@ export default function AdminPage() {
             {activeTab === "seating" && <AdminSeating classId={classId} />}
             {activeTab === "emergency" && <AdminEmergencySchedule classId={classId} />}
             {activeTab === "gallery" && <AdminGallery classId={classId} />}
+            {activeTab === "users" && <AdminUsers classId={classId} />}
             {activeTab === "settings" && <AdminSettings classId={classId} />}
           </div>
         </div>

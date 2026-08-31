@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import InstallAppButton from "./InstallAppButton";
 
 const sections = [
@@ -17,10 +19,17 @@ function scrollTo(id: string) {
 }
 
 export default function ClassNav({ classLabel }: { classLabel?: string }) {
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return document.documentElement.classList.contains("dark");
+    }
+    return true;
+  });
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"));
+    const unsubscribe = onAuthStateChanged(auth, (u) => setCurrentUser(u));
+    return () => unsubscribe();
   }, []);
 
   const toggleTheme = (e: React.MouseEvent) => {
@@ -124,6 +133,24 @@ export default function ClassNav({ classLabel }: { classLabel?: string }) {
           </svg>
         )}
       </button>
+
+      {currentUser && (
+        <>
+          <span className="text-foreground/20 text-sm hidden sm:inline-block">|</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground hidden md:inline-block max-w-[120px] truncate">
+              {currentUser.displayName || currentUser.email?.split("@")[0]}
+            </span>
+            <button
+              onClick={() => signOut(auth)}
+              className="text-xs text-muted-foreground hover:text-red-400 px-2.5 py-1 rounded-full hover:bg-red-500/10 transition-all cursor-pointer"
+              title="התנתק"
+            >
+              יציאה
+            </button>
+          </div>
+        </>
+      )}
     </nav>
   );
 }

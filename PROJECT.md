@@ -1,13 +1,13 @@
 # PROJECT.md — אתר כיתה (Single Class Website)
 
 ## What This Is
-A class website for schools (built for Ben Gurion Middle School, Herzliya).
+A secure, password-protected class website for schools (built for Ben Gurion Middle School, Herzliya).
 The site serves students and parents with schedules, announcements, seating charts, teachers list, events, photo gallery, and quick links.
-Managed directly by the homeroom teacher via a password-protected admin panel.
+In compliance with student privacy protection requirements, the site is gated: students and parents register and must be approved by the homeroom teacher before accessing any personal student information.
 
 ## Routing
-- **Public Class Page:** `/` (`app/page.tsx`)
-- **Admin Panel:** `/admin` (`app/admin/page.tsx`)
+- **Protected Class Page:** `/` (`app/page.tsx`) — Gated by `<AuthGate>` with registration, login, and pending approval screens.
+- **Admin Panel:** `/admin` (`app/admin/page.tsx`) — Teacher management interface including user approvals and whitelist.
 
 ## Tech Stack
 - **Framework:** Next.js 16 (App Router), React, TypeScript
@@ -17,30 +17,33 @@ Managed directly by the homeroom teacher via a password-protected admin panel.
 
 ## Firebase
 - **Firestore:** `classes/{classId}/{collection}` (default `classId`: `kita2` or set via `NEXT_PUBLIC_CLASS_ID`)
+- **Users Collection:** `users/{uid}` — Stores user profiles with approval status (`pending` | `approved` | `rejected`) and role (`student` | `parent` | `admin`).
 - **Storage:** `classes/{classId}/gallery/{filename}` — for gallery photos and announcement attachments
-- **Auth:** Email + Password authentication for the teacher/admin
-- **Security rules:** Public read; write only if `request.auth != null`
+- **Auth:** Email + Password authentication with role-based gatekeeping and admin approval.
+- **Security rules:** Read permitted only for approved users and admins; write permitted only for admins.
 
-### Firestore Collections (under `classes/{classId}/`)
+### Firestore Collections
 | Collection | One doc per | Key fields |
 |---|---|---|
-| `announcements` | announcement | `order`, `date`, `title`, `body`, `important`, `imageUrl`, `fileUrl` |
-| `events` | event | `date` (Timestamp), `title`, `time`, `category`, `endDate` (optional Timestamp) |
-| `schedule` | lesson row | `order`, `period`, `time`, `sun`–`fri`, `type` |
-| `emergency_schedule` | lesson row | same fields as `schedule` |
-| `seating` | desk row | `order`, `desk1_right/left` … `desk4_right/left` |
-| `teachers` | teacher | `order`, `name`, `subject`, `role`, `phone`, `email`, `notes` |
-| `gallery` | photo | `url`, `storagePath`, `caption`, `createdAt` |
+| `users` | registered user | `uid`, `email`, `fullName`, `role` (student/parent/admin), `studentName`, `status` (pending/approved/rejected), `createdAt`, `approvedAt` |
+| `classes/{classId}/announcements` | announcement | `order`, `date`, `title`, `body`, `important`, `imageUrl`, `fileUrl` |
+| `classes/{classId}/events` | event | `date` (Timestamp), `title`, `time`, `category`, `endDate` (optional Timestamp) |
+| `classes/{classId}/schedule` | lesson row | `order`, `period`, `time`, `sun`–`fri`, `type` |
+| `classes/{classId}/emergency_schedule` | lesson row | same fields as `schedule` |
+| `classes/{classId}/seating` | desk row | `order`, `desk1_right/left` … `desk4_right/left` |
+| `classes/{classId}/teachers` | teacher | `order`, `name`, `subject`, `role`, `phone`, `email`, `notes` |
+| `classes/{classId}/gallery` | photo | `url`, `storagePath`, `caption`, `createdAt` |
 
 ### Firestore Meta Docs (under `classes/{classId}/meta/`)
 | Doc | Fields | Purpose |
 |---|---|---|
 | `settings` | `className: string, schoolName: string, theme: string` | Custom class name, school name, and color theme |
+| `whitelist` | `emails: string[]` | Pre-approved emails for instant auto-approval upon registration |
 | `subjects` | `list: string[]` | Subject palette for schedule editor |
 | `students` | `list: string[]` | Student roster for seating editor |
 | `emergency` | `visible: boolean` | Whether emergency schedule is shown on site |
 
-## Public Sections
+## Public Sections (Protected behind Auth Gate)
 1. **הודעות** — Announcements (important flag = highlighted)
 2. **מערכת בחירום** — Emergency schedule (hidden by default, orange styling, toggled from admin)
 3. **מערכת שעות** — Weekly schedule (sticky columns on mobile, scrollable)
@@ -60,4 +63,5 @@ Managed directly by the homeroom teacher via a password-protected admin panel.
 | מקומות ישיבה | Drag-and-drop seating grid, student roster sidebar |
 | חירום | Visibility toggle, drag-and-drop editor, copy-from-regular button |
 | גלריה | Drag-or-click upload, progress bar, delete thumbnails |
+| 👥 משתמשים | Pending approvals queue with badge count, active users management, and pre-approved email whitelist |
 | ⚙️ הגדרות | Edit class name, school name, and pick color theme (blue, purple, green, orange, pink) |
