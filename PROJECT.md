@@ -16,7 +16,7 @@ Managed directly by the homeroom teacher via a password-protected admin panel.
 - **Hosting:** Vercel (auto-deploy from GitHub)
 
 ## Firebase
-- **Firestore:** `classes/{classId}/{collection}` (default `classId`: `main` or set via `NEXT_PUBLIC_CLASS_ID`)
+- **Firestore:** `classes/{classId}/{collection}` (default `classId`: `kita2` or set via `NEXT_PUBLIC_CLASS_ID`)
 - **Storage:** `classes/{classId}/gallery/{filename}` — for gallery photos and announcement attachments
 - **Auth:** Email + Password authentication for the teacher/admin
 - **Security rules:** Public read; write only if `request.auth != null`

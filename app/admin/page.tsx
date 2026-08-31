@@ -28,7 +28,7 @@ const TABS = [
 ];
 
 export default function AdminPage() {
-  const classId = process.env.NEXT_PUBLIC_CLASS_ID || "main";
+  const classId = process.env.NEXT_PUBLIC_CLASS_ID || "kita2";
 
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);

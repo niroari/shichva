@@ -8,7 +8,7 @@ interface Props {
   classId?: string;
 }
 
-export default function LoginForm({ classId = process.env.NEXT_PUBLIC_CLASS_ID || "main" }: Props) {
+export default function LoginForm({ classId = process.env.NEXT_PUBLIC_CLASS_ID || "kita2" }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

@@ -16,7 +16,7 @@ import ThemeInitializer from "@/components/class/ThemeInitializer";
 import { ClassSettings } from "@/components/admin/tabs/AdminSettings";
 
 export default function HomePage() {
-  const classId = process.env.NEXT_PUBLIC_CLASS_ID || "main";
+  const classId = process.env.NEXT_PUBLIC_CLASS_ID || "kita2";
 
   const [settings, setSettings] = useState<ClassSettings>({
     className: "כיתה ח׳2",
