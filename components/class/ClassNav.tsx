@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import InstallAppButton from "./InstallAppButton";
 
 const sections = [
   { id: "announcements", label: "הודעות" },
@@ -103,6 +104,8 @@ export default function ClassNav({ classLabel }: { classLabel?: string }) {
       ))}
 
       <span className="text-white/20 text-sm">|</span>
+
+      <InstallAppButton />
 
       <button
         onClick={toggleTheme}

@@ -11,6 +11,15 @@ const alef = Alef({
 export const metadata: Metadata = {
   title: "שכבת ח׳ — בן גוריון הרצליה",
   description: "אתר שכבת ח׳ בבית ספר בן גוריון הרצליה",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "אתר כיתה",
+  },
+  icons: {
+    icon: "/school-logo.png",
+    apple: "/school-logo.png",
+  },
 };
 
 export default function RootLayout({
