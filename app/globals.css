@@ -551,13 +551,13 @@ body[data-class-theme="kita5"] {
   }
 
   .teacher-chevron {
-    color: #475569;
+    color: var(--muted-foreground);
     flex-shrink: 0;
     transition: transform 0.28s ease, color 0.2s;
   }
   .teacher-card.open .teacher-chevron {
     transform: rotate(180deg);
-    color: #94a3b8;
+    color: var(--foreground);
   }
 
   .teacher-top { display: flex; align-items: center; gap: 12px; }
@@ -575,38 +575,49 @@ body[data-class-theme="kita5"] {
   }
 
   .teacher-info { flex: 1; min-width: 0; }
-  .teacher-name { font-weight: 700; font-size: 0.97rem; color: #f1f5f9; line-height: 1.3; }
-  .teacher-subject { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+  .teacher-name { font-weight: 700; font-size: 0.97rem; color: var(--foreground); line-height: 1.3; }
+  .teacher-subject { font-size: 0.8rem; color: var(--muted-foreground); margin-top: 2px; }
 
   .homeroom-badge {
     display: inline-block;
     font-size: 0.7rem;
     font-weight: 700;
-    color: #fbbf24;
-    background: rgba(251,191,36,0.12);
-    border: 1px solid rgba(251,191,36,0.3);
+    color: #b45309;
+    background: rgba(245,158,11,0.12);
+    border: 1px solid rgba(245,158,11,0.35);
     border-radius: 20px;
     padding: 2px 10px;
     margin-top: 4px;
   }
+  .dark .homeroom-badge {
+    color: #fbbf24;
+    background: rgba(251,191,36,0.12);
+    border-color: rgba(251,191,36,0.3);
+  }
 
   .teacher-wa {
     display: flex; align-items: center; gap: 7px;
-    background: rgba(37,211,102,0.1);
-    border: 1px solid rgba(37,211,102,0.25);
-    color: #4ade80;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.28);
+    color: #15803d;
     text-decoration: none;
     font-size: 0.82rem; font-weight: 600;
     padding: 7px 12px; border-radius: 8px;
     transition: background 0.2s, border-color 0.2s;
   }
-  .teacher-wa:hover { background: rgba(37,211,102,0.18); border-color: rgba(37,211,102,0.45); }
+  .dark .teacher-wa {
+    background: rgba(37,211,102,0.1);
+    border-color: rgba(37,211,102,0.25);
+    color: #4ade80;
+  }
+  .teacher-wa:hover { background: rgba(34,197,94,0.18); border-color: rgba(34,197,94,0.45); }
+  .dark .teacher-wa:hover { background: rgba(37,211,102,0.18); border-color: rgba(37,211,102,0.45); }
 
   .teacher-email {
     display: flex; align-items: center; gap: 7px;
-    background: rgba(56,189,248,0.08);
-    border: 1px solid rgba(56,189,248,0.22);
-    color: #7dd3fc;
+    background: rgba(2,132,199,0.08);
+    border: 1px solid rgba(2,132,199,0.25);
+    color: #0369a1;
     text-decoration: none;
     font-size: 0.78rem; font-weight: 500;
     padding: 7px 12px; border-radius: 8px;
@@ -614,19 +625,30 @@ body[data-class-theme="kita5"] {
     word-break: break-all;
     direction: ltr;
   }
-  .teacher-email:hover { background: rgba(56,189,248,0.15); border-color: rgba(56,189,248,0.4); }
+  .dark .teacher-email {
+    background: rgba(56,189,248,0.08);
+    border-color: rgba(56,189,248,0.22);
+    color: #7dd3fc;
+  }
+  .teacher-email:hover { background: rgba(2,132,199,0.15); border-color: rgba(2,132,199,0.4); }
+  .dark .teacher-email:hover { background: rgba(56,189,248,0.15); border-color: rgba(56,189,248,0.4); }
 
   .teacher-mashov {
     display: flex; align-items: center; gap: 7px;
-    background: rgba(148,163,184,0.08);
-    border: 1px solid rgba(148,163,184,0.2);
-    color: #94a3b8;
+    background: rgba(100,116,139,0.08);
+    border: 1px solid rgba(100,116,139,0.25);
+    color: var(--foreground);
     text-decoration: none;
     font-size: 0.82rem; font-weight: 500;
     padding: 7px 12px; border-radius: 8px;
     transition: background 0.2s, border-color 0.2s;
   }
-  .teacher-mashov:hover { background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.35); color: #cbd5e1; }
+  .dark .teacher-mashov {
+    color: #cbd5e1;
+    background: rgba(148,163,184,0.08);
+    border-color: rgba(148,163,184,0.2);
+  }
+  .teacher-mashov:hover { background: rgba(100,116,139,0.15); border-color: rgba(100,116,139,0.35); }
 
   .teacher-notes {
     display: flex;

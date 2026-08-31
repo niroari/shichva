@@ -26,18 +26,18 @@ const MONTH_NAMES = [
 ];
 
 const CATEGORIES = [
-  { cats: "מבחן",    label: "מבחן",      dot: "bg-red-400",     badge: "bg-red-400/25 text-red-300" },
-  { cats: "בוחן",    label: "בוחן",      dot: "bg-orange-400",  badge: "bg-orange-400/25 text-orange-300" },
-  { cats: "אירוע",   label: "אירוע",     dot: "bg-blue-400",    badge: "bg-blue-400/25 text-blue-300" },
-  { cats: "חג,חופש", label: "חג / חופש", dot: "bg-violet-400",  badge: "bg-violet-400/25 text-violet-300" },
-  { cats: "טיול",    label: "טיול",      dot: "bg-emerald-400", badge: "bg-emerald-400/25 text-emerald-300" },
+  { cats: "מבחן",    label: "מבחן",      dot: "bg-red-500",     badge: "bg-red-500/15 text-red-700 dark:text-red-300 border border-red-500/25" },
+  { cats: "בוחן",    label: "בוחן",      dot: "bg-orange-500",  badge: "bg-orange-500/15 text-orange-700 dark:text-orange-300 border border-orange-500/25" },
+  { cats: "אירוע",   label: "אירוע",     dot: "bg-blue-500",    badge: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/25" },
+  { cats: "חג,חופש", label: "חג / חופש", dot: "bg-violet-500",  badge: "bg-violet-500/15 text-violet-700 dark:text-violet-300 border border-violet-500/25" },
+  { cats: "טיול",    label: "טיול",      dot: "bg-emerald-500", badge: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25" },
 ];
 
 function getCatStyle(cat: string) {
   return (
     CATEGORIES.find((c) => c.cats.split(",").includes(cat)) ?? {
-      dot: "bg-blue-400",
-      badge: "bg-blue-400/25 text-blue-300",
+      dot: "bg-blue-500",
+      badge: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/25",
       label: cat,
     }
   );
@@ -53,16 +53,16 @@ function formatRange(start: Date, end?: Date): string {
 function getCategoryBadgeClass(category: string): string {
   switch (category) {
     case "מבחן":
-      return "bg-red-500/20 text-red-300 border-red-500/30";
+      return "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30";
     case "בוחן":
-      return "bg-orange-500/20 text-orange-300 border-orange-500/30";
+      return "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30";
     case "חג":
     case "חופש":
-      return "bg-violet-500/20 text-violet-300 border-violet-500/30";
+      return "bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30";
     case "טיול":
-      return "bg-emerald-500/20 text-emerald-300 border-emerald-500/30";
+      return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
     default:
-      return "bg-blue-500/20 text-blue-300 border-blue-500/30";
+      return "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30";
   }
 }
 
@@ -240,10 +240,10 @@ export default function Events({ classId }: { classId: string }) {
               onClick={() => setActiveFilter(isActive ? null : c.cats)}
               className={`flex items-center gap-1.5 text-xs sm:text-sm px-3 py-1 rounded-full border transition-all duration-150 cursor-pointer select-none ${
                 isActive
-                  ? "border-white/25 bg-white/10 text-slate-100 font-semibold"
+                  ? "border-foreground/20 bg-foreground/10 text-foreground font-semibold shadow-xs"
                   : isDimmed
-                  ? "border-transparent text-slate-400 opacity-30"
-                  : "border-transparent text-slate-300 hover:opacity-80"
+                  ? "border-transparent text-muted-foreground opacity-30"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               <span className={`w-2 h-2 rounded-full flex-shrink-0 ${c.dot}`} />
@@ -255,7 +255,7 @@ export default function Events({ classId }: { classId: string }) {
 
       {/* View Mode Switcher (Month vs All vs Calendar) */}
       <div className="flex justify-center mb-4">
-        <div className="inline-flex p-1 rounded-xl bg-white/[0.04] border border-white/10 text-xs">
+        <div className="inline-flex p-1 rounded-xl bg-black/5 dark:bg-white/[0.04] border border-border/60 text-xs">
           <button
             type="button"
             onClick={() => setViewMode("month")}
@@ -303,7 +303,7 @@ export default function Events({ classId }: { classId: string }) {
             <button
               onClick={() => setMonthIdx((i) => i + 1)}
               disabled={monthIdx === monthGroups.length - 1}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.13] bg-white/[0.07] text-slate-300 text-xl hover:bg-white/[0.14] hover:text-slate-100 transition-all disabled:opacity-20 disabled:cursor-default cursor-pointer"
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border/70 bg-black/5 dark:bg-white/[0.07] text-foreground text-xl hover:bg-black/10 dark:hover:bg-white/[0.14] transition-all disabled:opacity-20 disabled:cursor-default cursor-pointer"
             >
               ‹
             </button>
@@ -313,7 +313,7 @@ export default function Events({ classId }: { classId: string }) {
             <button
               onClick={() => setMonthIdx((i) => i - 1)}
               disabled={monthIdx === 0}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.13] bg-white/[0.07] text-slate-300 text-xl hover:bg-white/[0.14] hover:text-slate-100 transition-all disabled:opacity-20 disabled:cursor-default cursor-pointer"
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border/70 bg-black/5 dark:bg-white/[0.07] text-foreground text-xl hover:bg-black/10 dark:hover:bg-white/[0.14] transition-all disabled:opacity-20 disabled:cursor-default cursor-pointer"
             >
               ›
             </button>
@@ -330,17 +330,17 @@ export default function Events({ classId }: { classId: string }) {
                 return (
                   <div
                     key={e.id}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.06] transition-colors ${
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors ${
                       isPast && displayPast ? "opacity-40" : ""
                     }`}
                   >
                     <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${style.dot}`} />
-                    <span className="text-sm font-semibold text-slate-400 whitespace-nowrap min-w-[60px]">
+                    <span className="text-sm font-semibold text-muted-foreground whitespace-nowrap min-w-[60px]">
                       {e.display}
                     </span>
-                    <span className="flex-1 text-slate-100 text-sm">{e.title}</span>
+                    <span className="flex-1 text-foreground font-medium text-sm">{e.title}</span>
                     {e.time && (
-                      <span className="text-xs text-slate-500 whitespace-nowrap" dir="ltr">{e.time}</span>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap" dir="ltr">{e.time}</span>
                     )}
                     <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap ${style.badge}`}>
                       {style.label}
@@ -361,10 +361,10 @@ export default function Events({ classId }: { classId: string }) {
               <button
                 type="button"
                 onClick={() => setShowPast((p) => !p)}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs border border-white/15 bg-white/[0.04] hover:bg-white/[0.09] text-slate-300 transition-all cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs border border-border/70 bg-black/5 dark:bg-white/[0.04] hover:bg-black/10 dark:hover:bg-white/[0.09] text-foreground transition-all cursor-pointer shadow-xs"
               >
                 <span>{showPast ? "👁️ הסתר אירועים שעברו" : "🕒 הצג גם אירועים שעברו"}</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-slate-300 font-mono">
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/10 dark:bg-white/10 text-foreground font-mono">
                   {pastEventsCount}
                 </span>
               </button>
@@ -380,7 +380,7 @@ export default function Events({ classId }: { classId: string }) {
           ) : (
             allFilteredGroups.map((g) => (
               <div key={g.label} className="space-y-2">
-                <div className="flex items-center gap-2 pb-1 border-b border-white/10">
+                <div className="flex items-center gap-2 pb-1 border-b border-border/60">
                   <span className="font-bold text-sm text-[var(--theme-accent)]">
                     {g.label}
                   </span>
@@ -395,17 +395,17 @@ export default function Events({ classId }: { classId: string }) {
                     return (
                       <div
                         key={e.id}
-                        className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.06] transition-colors ${
+                        className={`flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/[0.06] transition-colors ${
                           isPast ? "opacity-45" : ""
                         }`}
                       >
                         <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${style.dot}`} />
-                        <span className="text-sm font-semibold text-slate-400 whitespace-nowrap min-w-[60px]">
+                        <span className="text-sm font-semibold text-muted-foreground whitespace-nowrap min-w-[60px]">
                           {e.display}
                         </span>
-                        <span className="flex-1 text-slate-100 text-sm">{e.title}</span>
+                        <span className="flex-1 text-foreground font-medium text-sm">{e.title}</span>
                         {e.time && (
-                          <span className="text-xs text-slate-500 whitespace-nowrap" dir="ltr">{e.time}</span>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap" dir="ltr">{e.time}</span>
                         )}
                         <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap ${style.badge}`}>
                           {style.label}
@@ -431,7 +431,7 @@ export default function Events({ classId }: { classId: string }) {
                   new Date(Date.UTC(calMonth.getUTCFullYear(), calMonth.getUTCMonth() + 1, 1))
                 )
               }
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.13] bg-white/[0.07] text-slate-300 text-xl hover:bg-white/[0.14] hover:text-slate-100 transition-all cursor-pointer"
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border/70 bg-black/5 dark:bg-white/[0.07] text-foreground text-xl hover:bg-black/10 dark:hover:bg-white/[0.14] transition-all cursor-pointer"
             >
               ‹
             </button>
@@ -444,20 +444,20 @@ export default function Events({ classId }: { classId: string }) {
                   new Date(Date.UTC(calMonth.getUTCFullYear(), calMonth.getUTCMonth() - 1, 1))
                 )
               }
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-white/[0.13] bg-white/[0.07] text-slate-300 text-xl hover:bg-white/[0.14] hover:text-slate-100 transition-all cursor-pointer"
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border/70 bg-black/5 dark:bg-white/[0.07] text-foreground text-xl hover:bg-black/10 dark:hover:bg-white/[0.14] transition-all cursor-pointer"
             >
               ›
             </button>
           </div>
 
           {/* Grid Container */}
-          <div className="w-full overflow-x-auto rounded-xl border border-white/10 bg-[var(--card-bg)] shadow-md">
+          <div className="w-full overflow-x-auto rounded-xl border border-border/60 bg-[var(--card-bg)] shadow-md">
             <div className="min-w-[580px] grid grid-cols-7 border-collapse">
               {/* Day Name Headers */}
               {["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"].map((dayName) => (
                 <div
                   key={dayName}
-                  className="p-2 text-center text-xs font-semibold text-muted-foreground border-b border-white/10 bg-white/[0.03]"
+                  className="p-2 text-center text-xs font-semibold text-muted-foreground border-b border-border/60 bg-black/[0.02] dark:bg-white/[0.03]"
                 >
                   {dayName}
                 </div>
@@ -485,10 +485,10 @@ export default function Events({ classId }: { classId: string }) {
                         setSelectedCellDate(cellDate);
                       }
                     }}
-                    className={`min-h-[85px] sm:min-h-[95px] flex flex-col justify-between p-1.5 sm:p-2 border-b border-r border-white/10 hover:bg-white/[0.04] transition-colors select-none ${
+                    className={`min-h-[85px] sm:min-h-[95px] flex flex-col justify-between p-1.5 sm:p-2 border-b border-r border-border/60 hover:bg-black/5 dark:hover:bg-white/[0.04] transition-colors select-none ${
                       isCurrentMonth ? "" : "opacity-25"
                     } ${
-                      idx % 7 === 0 ? "border-l border-white/10" : ""
+                      idx % 7 === 0 ? "border-l border-border/60" : ""
                     } ${
                       cellEvents.length > 0 ? "cursor-pointer" : ""
                     } ${
@@ -506,7 +506,7 @@ export default function Events({ classId }: { classId: string }) {
                     <div className="flex justify-between items-center mb-1">
                       <span
                         className={`text-xs font-bold w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full ${
-                          isToday ? "text-white" : "text-slate-300"
+                          isToday ? "text-white" : "text-foreground"
                         }`}
                         style={isToday ? { backgroundColor: "var(--theme-accent)" } : {}}
                       >
@@ -549,7 +549,7 @@ export default function Events({ classId }: { classId: string }) {
                 className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-5 max-w-sm w-full shadow-2xl space-y-4"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center justify-between border-b border-border/60 pb-3">
                   <div className="font-bold text-foreground text-base">
                     אירועי {selectedCellDate.getUTCDate()} ב{MONTH_NAMES[selectedCellDate.getUTCMonth()]}
                   </div>
@@ -567,7 +567,7 @@ export default function Events({ classId }: { classId: string }) {
                     return (
                       <div
                         key={e.id}
-                        className="p-3 rounded-xl bg-white/[0.04] border border-white/10 space-y-1"
+                        className="p-3 rounded-xl bg-black/5 dark:bg-white/[0.04] border border-border/60 space-y-1"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-bold text-sm text-foreground">{e.title}</span>
@@ -580,7 +580,7 @@ export default function Events({ classId }: { classId: string }) {
                             ⏰ {e.time}
                           </div>
                         )}
-                        <div className="text-[11px] text-slate-400">
+                        <div className="text-[11px] text-muted-foreground">
                           📅 {e.display}
                         </div>
                       </div>

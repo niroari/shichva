@@ -248,16 +248,16 @@ export default function Schedule({ classId }: { classId: string }) {
                         <span className="font-bold text-sm" style={{ color: "var(--theme-accent)" }}>
                           {row.period}
                         </span>
-                        <span className="text-[10px] text-slate-400 block sm:hidden whitespace-nowrap leading-none mt-0.5" dir="ltr">
+                        <span className="text-[10px] text-muted-foreground block sm:hidden whitespace-nowrap leading-none mt-0.5" dir="ltr">
                           {row.time}
                         </span>
                       </div>
                     </td>
-                    <td className="text-slate-400 text-xs whitespace-nowrap hidden sm:table-cell" dir="ltr">
+                    <td className="text-muted-foreground text-xs whitespace-nowrap hidden sm:table-cell" dir="ltr">
                       {row.time}
                     </td>
                     {DAYS.map((day) => (
-                      <td key={day} className={!row[day] ? "text-slate-600" : ""}>
+                      <td key={day} className={!row[day] ? "text-muted-foreground/40" : "text-foreground"}>
                         {row[day] || "—"}
                       </td>
                     ))}

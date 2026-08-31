@@ -87,11 +87,11 @@ export default function EmergencySchedule({ classId }: { classId: string }) {
               return (
                 <tr key={row.id}>
                   <td className="font-bold emergency-period">{row.period}</td>
-                  <td className="text-xs whitespace-nowrap" style={{ color: "#94a3b8" }}>
+                  <td className="text-xs text-muted-foreground whitespace-nowrap">
                     {row.time}
                   </td>
                   {DAYS.map((day) => (
-                    <td key={day} className={!row[day] ? "text-slate-600" : ""}>
+                    <td key={day} className={!row[day] ? "text-muted-foreground/40" : "text-foreground"}>
                       {row[day] || "—"}
                     </td>
                   ))}

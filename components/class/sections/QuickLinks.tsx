@@ -41,7 +41,7 @@ export default function QuickLinks() {
               width={28}
               height={28}
               className="rounded-md"
-              style={link.invertIcon ? { filter: "brightness(0) invert(1)" } : undefined}
+              style={link.invertIcon ? { filter: "var(--logo-filter)" } : undefined}
             />
             {link.label}
           </a>
@@ -57,7 +57,7 @@ export default function QuickLinks() {
           background: "linear-gradient(135deg, rgba(109,40,217,0.25) 0%, rgba(67,56,202,0.2) 100%)",
         }}
       >
-        <Image src={featured.icon} alt="NotebookLM" width={32} height={32} style={{ filter: "brightness(0) invert(1)" }} />
+        <Image src={featured.icon} alt="NotebookLM" width={32} height={32} style={{ filter: "var(--logo-filter)" }} />
         <div className="flex flex-col items-start">
           <span className="text-base">{featured.label}</span>
           <span className="text-xs text-muted-foreground">{featured.sublabel}</span>

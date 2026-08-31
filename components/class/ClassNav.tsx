@@ -89,7 +89,7 @@ export default function ClassNav({ classLabel }: { classLabel?: string }) {
           <span className="text-xs font-bold text-foreground px-2 hidden sm:inline-block">
             {classLabel}
           </span>
-          <span className="text-white/20 text-sm hidden sm:inline-block">|</span>
+          <span className="text-foreground/20 text-sm hidden sm:inline-block">|</span>
         </>
       )}
 
@@ -103,7 +103,7 @@ export default function ClassNav({ classLabel }: { classLabel?: string }) {
         </button>
       ))}
 
-      <span className="text-white/20 text-sm">|</span>
+      <span className="text-foreground/20 text-sm">|</span>
 
       <InstallAppButton />
 
