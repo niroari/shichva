@@ -1,7 +1,18 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { Download, Share2, PlusSquare, X, Smartphone, Check } from "lucide-react";
+import {
+  Download,
+  Share2,
+  PlusSquare,
+  X,
+  Smartphone,
+  Check,
+  MoreHorizontal,
+  Compass,
+  Globe,
+  Info,
+} from "lucide-react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -37,12 +48,25 @@ export default function InstallAppButton() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [installedSuccessfully, setInstalledSuccessfully] = useState(false);
+  const [iosBrowserTab, setIosBrowserTab] = useState<"safari" | "chrome">("safari");
 
-  // Check for iOS
+  // Check if device is iOS (iPhone/iPad)
   const isIOS =
     typeof window !== "undefined" &&
     (/iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
+
+  // Check if browser is Chrome on iOS (CriOS)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const ua = window.navigator.userAgent.toLowerCase();
+      if (ua.includes("crios")) {
+        setIosBrowserTab("chrome");
+      } else {
+        setIosBrowserTab("safari");
+      }
+    }
+  }, []);
 
   useEffect(() => {
     // Listen for Chrome/Android/Edge beforeinstallprompt event
@@ -104,138 +128,246 @@ export default function InstallAppButton() {
           </>
         ) : (
           <>
-            <Download className="w-3.5 h-3.5 text-primary animate-bounce-subtle" />
+            <Download className="w-3.5 h-3.5 text-primary" />
             <span>התקן אפליקציה</span>
           </>
         )}
       </button>
 
-      {/* Instructions Modal for iOS / Desktop without prompt */}
+      {/* Instructions Modal / Bottom Sheet */}
       {showModal && (
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
           onClick={() => setShowModal(false)}
         >
           <div
-            className="relative w-full max-w-md rounded-2xl p-6 bg-card text-card-foreground border border-border shadow-2xl space-y-5 animate-in zoom-in-95 duration-200"
+            className="relative w-full max-w-lg rounded-t-3xl sm:rounded-3xl bg-card text-card-foreground border-t-2 sm:border-2 border-border shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[88dvh] animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200 overflow-hidden"
             style={{
-              background: "var(--card-bg, rgba(255, 255, 255, 0.95))",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
+              backgroundColor: "var(--card)",
+              opacity: 1,
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between pb-2 border-b border-border/50">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-primary/10 text-primary">
+            {/* Header (Sticky top) */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-card shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-primary/10 text-primary shrink-0">
                   <Smartphone className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-foreground">התקנת האתר כאפליקציה</h3>
-                  <p className="text-xs text-muted-foreground">גישה מהירה מהמסך הראשי ללא צורך בדפדפן</p>
+                  <h3 className="text-base font-bold text-foreground leading-tight">
+                    התקנת האפליקציה בטלפון
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    הוספה מהירה למסך הבית (30 שניות)
+                  </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
                 aria-label="סגור"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Content based on platform */}
-            {isIOS ? (
-              <div className="space-y-4 text-sm text-foreground">
-                <p className="text-xs text-muted-foreground font-medium">
-                  במכשירי iPhone ו-iPad ניתן להתקין דרך דפדפן Safari בכמה צעדים פשוטים:
-                </p>
+            {/* Scrollable Body */}
+            <div className="overflow-y-auto px-5 py-4 space-y-4 text-sm">
+              {isIOS ? (
+                <div className="space-y-4">
+                  {/* Browser Selector Tabs for iOS */}
+                  <div className="flex rounded-xl p-1 bg-muted border border-border">
+                    <button
+                      type="button"
+                      onClick={() => setIosBrowserTab("safari")}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        iosBrowserTab === "safari"
+                          ? "bg-card text-foreground shadow-xs border border-border"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Compass className="w-4 h-4 text-sky-500" />
+                      <span>דפדפן Safari (ספארי)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIosBrowserTab("chrome")}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        iosBrowserTab === "chrome"
+                          ? "bg-card text-foreground shadow-xs border border-border"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Globe className="w-4 h-4 text-amber-500" />
+                      <span>דפדפן כרום (Chrome)</span>
+                    </button>
+                  </div>
 
+                  {/* Safari Instructions */}
+                  {iosBrowserTab === "safari" && (
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-muted/60 border border-border/80">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0 mt-0.5 shadow-xs">
+                          1
+                        </span>
+                        <div className="space-y-1">
+                          <p className="font-bold text-foreground text-sm flex items-center flex-wrap gap-1.5">
+                            לחצו על כפתור השיתוף
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30 text-xs font-bold">
+                              <Share2 className="w-3.5 h-3.5" />
+                              שתף
+                            </span>
+                          </p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            נמצא בסרגל התחתון של המסך (סמל של ריבוע עם חץ למעלה).
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-muted/60 border border-border/80">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0 mt-0.5 shadow-xs">
+                          2
+                        </span>
+                        <div className="space-y-1">
+                          <p className="font-bold text-foreground text-sm flex items-center flex-wrap gap-1.5">
+                            גללו למטה ובחרו
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-xs font-bold">
+                              <PlusSquare className="w-3.5 h-3.5" />
+                              ״הוסף למסך הבית״
+                            </span>
+                          </p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            בתפריט שנפתח, גללו מעט למטה ברשימת האפשרויות.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-muted/60 border border-border/80">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0 mt-0.5 shadow-xs">
+                          3
+                        </span>
+                        <div className="space-y-1">
+                          <p className="font-bold text-foreground text-sm">
+                            לחצו על ״הוסף״ (Add) בפינה העליונה
+                          </p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            זהו! סמל האפליקציה נוסף למסך הבית וייפתח במסך מלא ללא דפדפן.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Chrome on iOS Instructions */}
+                  {iosBrowserTab === "chrome" && (
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-muted/60 border border-border/80">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0 mt-0.5 shadow-xs">
+                          1
+                        </span>
+                        <div className="space-y-1">
+                          <p className="font-bold text-foreground text-sm flex items-center flex-wrap gap-1.5">
+                            לחצו על כפתור 3 הנקודות
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold">
+                              <MoreHorizontal className="w-3.5 h-3.5" />
+                              תפריט
+                            </span>
+                          </p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            נמצא בפינה התחתונה של המסך (או ליד שורת הכתובת).
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-muted/60 border border-border/80">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0 mt-0.5 shadow-xs">
+                          2
+                        </span>
+                        <div className="space-y-1">
+                          <p className="font-bold text-foreground text-sm flex items-center flex-wrap gap-1.5">
+                            גללו ובחרו
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-xs font-bold">
+                              <PlusSquare className="w-3.5 h-3.5" />
+                              ״הוסף למסך הבית״
+                            </span>
+                          </p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            או לחצו על סמל השיתוף ובחרו ״הוסף למסך הבית״.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-muted/60 border border-border/80">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0 mt-0.5 shadow-xs">
+                          3
+                        </span>
+                        <div className="space-y-1">
+                          <p className="font-bold text-foreground text-sm">
+                            לחצו על ״הוסף״ (Add)
+                          </p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            האפליקציה תותקן מיידית על מסך הבית של האייפון שלכם.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* WhatsApp In-App Browser Helper Notice */}
+                  <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-200">
+                    <Info className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <p className="text-xs leading-relaxed">
+                      <strong>פתחתם דרך וואטסאפ?</strong> אם אינכם רואים את האפשרות, לחצו על סמל ה-
+                      <strong>...</strong> בפינה העליונה ובחרו <strong>״פתח בספארי״ (Open in Safari)</strong>.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                /* Android / Desktop Browser Instructions */
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-border/40">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
+                  <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-muted/60 border border-border/80">
+                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0 mt-0.5 shadow-xs">
                       1
                     </span>
                     <div className="space-y-1">
-                      <p className="font-semibold text-xs sm:text-sm">
-                        לחצו על כפתור השיתוף{" "}
-                        <Share2 className="inline-block w-4 h-4 mx-1 text-primary align-text-bottom" />
+                      <p className="font-bold text-foreground text-sm flex items-center flex-wrap gap-1.5">
+                        לחצו על סמל ההתקנה
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/15 text-primary border border-primary/30 text-xs font-bold">
+                          <Download className="w-3.5 h-3.5" />
+                          התקן
+                        </span>
                       </p>
-                      <p className="text-xs text-muted-foreground">נמצא בתחתית המסך (או בסרגל הכלים העליון ב-iPad)</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        נמצא בצד שורת הכתובת של הדפדפן (במחשב) או בתפריט 3 הנקודות בטלפון.
+                      </p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-border/40">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
+                  <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-muted/60 border border-border/80">
+                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0 mt-0.5 shadow-xs">
                       2
                     </span>
                     <div className="space-y-1">
-                      <p className="font-semibold text-xs sm:text-sm">
-                        בחרו ב-<strong>״הוסף למסך הבית״</strong>{" "}
-                        <PlusSquare className="inline-block w-4 h-4 mx-1 text-primary align-text-bottom" />
+                      <p className="font-bold text-foreground text-sm">
+                        אשרו את ההתקנה
                       </p>
-                      <p className="text-xs text-muted-foreground">גללו את רשימת האפשרויות עד למציאת האפשרות</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-border/40">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
-                      3
-                    </span>
-                    <div className="space-y-1">
-                      <p className="font-semibold text-xs sm:text-sm">לחצו על ״הוסף״ (Add) בפינה העליונה</p>
-                      <p className="text-xs text-muted-foreground">סמל האפליקציה יופיע מיידית על מסך הבית שלכם</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4 text-sm text-foreground">
-                <p className="text-xs text-muted-foreground">
-                  להתקנת האפליקציה במחשב או בטלפון:
-                </p>
-
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-border/40">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
-                      1
-                    </span>
-                    <div className="space-y-1">
-                      <p className="font-semibold text-xs sm:text-sm">
-                        לחצו על סמל ההתקנה{" "}
-                        <Download className="inline-block w-4 h-4 mx-1 text-primary align-text-bottom" />
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        נמצא בצד שורת הכתובת של הדפדפן (ב-Chrome, Edge או ספארי)
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-border/40">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
-                      2
-                    </span>
-                    <div className="space-y-1">
-                      <p className="font-semibold text-xs sm:text-sm">
-                        או מתפריט הדפדפן (⋮) &gt; ״התקן אפליקציה״
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        האפליקציה תיפתח בחלון ייעודי ותתווסף לשולחן העבודה / למסך הבית
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        האפליקציה תיפתח בחלון עצמאי ותתווסף לשולחן העבודה / מסך הבית.
                       </p>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* Close Button */}
-            <div className="pt-2">
+            {/* Sticky Footer */}
+            <div className="px-5 py-4 border-t border-border bg-card shrink-0">
               <button
                 onClick={() => setShowModal(false)}
-                className="w-full py-2 px-4 rounded-xl text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                className="w-full py-3 px-4 rounded-2xl text-sm font-bold bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer shadow-md"
               >
                 הבנתי, תודה!
               </button>
