@@ -29,7 +29,7 @@ Managed directly by the homeroom teacher via a password-protected admin panel.
 | `schedule` | lesson row | `order`, `period`, `time`, `sun`–`fri`, `type` |
 | `emergency_schedule` | lesson row | same fields as `schedule` |
 | `seating` | desk row | `order`, `desk1_right/left` … `desk4_right/left` |
-| `teachers` | teacher | `order`, `name`, `subject`, `role`, `phone`, `email` |
+| `teachers` | teacher | `order`, `name`, `subject`, `role`, `phone`, `email`, `notes` |
 | `gallery` | photo | `url`, `storagePath`, `caption`, `createdAt` |
 
 ### Firestore Meta Docs (under `classes/{classId}/meta/`)

@@ -546,7 +546,7 @@ body[data-class-theme="kita5"] {
     transition: max-height 0.28s ease, opacity 0.22s ease;
   }
   .teacher-card.open .teacher-contact {
-    max-height: 140px;
+    max-height: 260px;
     opacity: 1;
   }
 
@@ -627,6 +627,20 @@ body[data-class-theme="kita5"] {
     transition: background 0.2s, border-color 0.2s;
   }
   .teacher-mashov:hover { background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.35); color: #cbd5e1; }
+
+  .teacher-notes {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.22);
+    color: var(--foreground);
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 7px 12px;
+    border-radius: 8px;
+    line-height: 1.45;
+  }
 
   /* ── Admin panel ── */
   .admin-card {

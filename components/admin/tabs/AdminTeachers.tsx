@@ -22,6 +22,7 @@ interface Teacher {
   role: string;
   phone: string;
   email: string;
+  notes?: string;
 }
 
 interface Props {
@@ -38,6 +39,7 @@ export default function AdminTeachers({ classId }: Props) {
   const [newRole, setNewRole] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [newEmail, setNewEmail] = useState("");
+  const [newNotes, setNewNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
   // Inline edit
@@ -47,6 +49,7 @@ export default function AdminTeachers({ classId }: Props) {
   const [editRole, setEditRole] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editEmail, setEditEmail] = useState("");
+  const [editNotes, setEditNotes] = useState("");
   const [editSaving, setEditSaving] = useState(false);
 
   const colRef = collection(db, "classes", classId, "teachers");
@@ -73,12 +76,14 @@ export default function AdminTeachers({ classId }: Props) {
       role: newRole.trim(),
       phone: newPhone.trim(),
       email: newEmail.trim(),
+      notes: newNotes.trim(),
     });
     setNewName("");
     setNewSubject("");
     setNewRole("");
     setNewPhone("");
     setNewEmail("");
+    setNewNotes("");
     setSaving(false);
   }
 
@@ -89,6 +94,7 @@ export default function AdminTeachers({ classId }: Props) {
     setEditRole(item.role);
     setEditPhone(item.phone);
     setEditEmail(item.email);
+    setEditNotes(item.notes || "");
   }
 
   function cancelEdit() {
@@ -103,6 +109,7 @@ export default function AdminTeachers({ classId }: Props) {
       role: editRole.trim(),
       phone: editPhone.trim(),
       email: editEmail.trim(),
+      notes: editNotes.trim(),
     });
     setEditId(null);
     setEditSaving(false);
@@ -119,6 +126,7 @@ export default function AdminTeachers({ classId }: Props) {
         "הוסף את פרטי כל מורה דרך הטופס",
         "מספר טלפון יהפוך אוטומטית לקישור לוואטסאפ",
         "אימייל יהפוך לקישור שליחת מייל",
+        "הערות (למשל: שעות מענה וקבלת קהל) יוצגו בכרטיס המורה",
         'אם לא הוזנו פרטי קשר, יופיע הכיתוב "יש ליצור קשר במשוב"',
       ]} />
       {/* Add form */}
@@ -156,7 +164,7 @@ export default function AdminTeachers({ classId }: Props) {
             </div>
           </div>
           <div className="form-row">
-            <div className="form-group">
+            <div className="form-group" style={{ flex: 1 }}>
               <label>טלפון / WhatsApp</label>
               <input
                 type="text"
@@ -166,7 +174,7 @@ export default function AdminTeachers({ classId }: Props) {
                 dir="ltr"
               />
             </div>
-            <div className="form-group" style={{ flex: 2 }}>
+            <div className="form-group" style={{ flex: 1.5 }}>
               <label>אימייל</label>
               <input
                 type="email"
@@ -174,6 +182,15 @@ export default function AdminTeachers({ classId }: Props) {
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
                 dir="ltr"
+              />
+            </div>
+            <div className="form-group" style={{ flex: 2 }}>
+              <label>הערות (שעות מענה וכו׳)</label>
+              <input
+                type="text"
+                placeholder="למשל: זמין בימים א׳-ה׳ 16:00-18:00"
+                value={newNotes}
+                onChange={(e) => setNewNotes(e.target.value)}
               />
             </div>
             <button
@@ -200,11 +217,12 @@ export default function AdminTeachers({ classId }: Props) {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th style={{ width: 130 }}>שם</th>
-                  <th style={{ width: 110 }}>מקצוע</th>
-                  <th style={{ width: 90 }}>תפקיד</th>
-                  <th style={{ width: 120 }}>טלפון</th>
+                  <th style={{ width: 120 }}>שם</th>
+                  <th style={{ width: 100 }}>מקצוע</th>
+                  <th style={{ width: 80 }}>תפקיד</th>
+                  <th style={{ width: 110 }}>טלפון</th>
                   <th>אימייל</th>
+                  <th>הערות</th>
                   <th style={{ width: 120 }}>פעולות</th>
                 </tr>
               </thead>
@@ -217,7 +235,7 @@ export default function AdminTeachers({ classId }: Props) {
                           className="inline-input"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
-                          style={{ minWidth: 120 }}
+                          style={{ minWidth: 110 }}
                         />
                       </td>
                       <td>
@@ -225,7 +243,7 @@ export default function AdminTeachers({ classId }: Props) {
                           className="inline-input"
                           value={editSubject}
                           onChange={(e) => setEditSubject(e.target.value)}
-                          style={{ minWidth: 100 }}
+                          style={{ minWidth: 90 }}
                         />
                       </td>
                       <td>
@@ -233,7 +251,7 @@ export default function AdminTeachers({ classId }: Props) {
                           className="inline-input"
                           value={editRole}
                           onChange={(e) => setEditRole(e.target.value)}
-                          style={{ minWidth: 80 }}
+                          style={{ minWidth: 75 }}
                         />
                       </td>
                       <td>
@@ -241,7 +259,7 @@ export default function AdminTeachers({ classId }: Props) {
                           className="inline-input"
                           value={editPhone}
                           onChange={(e) => setEditPhone(e.target.value)}
-                          style={{ width: 120 }}
+                          style={{ width: 110 }}
                           dir="ltr"
                         />
                       </td>
@@ -250,8 +268,17 @@ export default function AdminTeachers({ classId }: Props) {
                           className="inline-input"
                           value={editEmail}
                           onChange={(e) => setEditEmail(e.target.value)}
-                          style={{ minWidth: 160 }}
+                          style={{ minWidth: 140 }}
                           dir="ltr"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          className="inline-input"
+                          value={editNotes}
+                          onChange={(e) => setEditNotes(e.target.value)}
+                          placeholder="הערות..."
+                          style={{ minWidth: 140 }}
                         />
                       </td>
                       <td>
@@ -292,6 +319,9 @@ export default function AdminTeachers({ classId }: Props) {
                       </td>
                       <td className="cell-trunc cell-dim" style={{ direction: "ltr" }}>
                         {item.email || "—"}
+                      </td>
+                      <td className="cell-trunc cell-dim" style={{ maxWidth: 150 }} title={item.notes}>
+                        {item.notes || "—"}
                       </td>
                       <td className="cell-nowrap">
                         <div className="flex gap-2">

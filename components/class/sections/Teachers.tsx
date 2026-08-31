@@ -12,6 +12,7 @@ interface Teacher {
   role: string;
   phone: string;
   email: string;
+  notes?: string;
 }
 
 const AVATAR_COLORS = [
@@ -42,6 +43,13 @@ const MailIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
     <rect x="2" y="4" width="20" height="16" rx="2" />
     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+  </svg>
+);
+
+const ClockIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: "2px" }}>
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
   </svg>
 );
 
@@ -124,7 +132,13 @@ export default function Teachers({ classId }: { classId: string }) {
                   <MailIcon /> {t.email}
                 </a>
               ) : null}
-              {!t.phone && !t.email ? (
+              {t.notes ? (
+                <div className="teacher-notes">
+                  <ClockIcon />
+                  <span>{t.notes}</span>
+                </div>
+              ) : null}
+              {!t.phone && !t.email && !t.notes ? (
                 <a className="teacher-mashov" href="https://web.mashov.info/parents/main/home" target="_blank" rel="noopener noreferrer">
                   פנייה דרך המשוב
                 </a>
