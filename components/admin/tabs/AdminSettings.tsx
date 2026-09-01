@@ -13,6 +13,8 @@ export interface ClassSettings {
   className?: string;
   schoolName?: string;
   theme?: string;
+  notifyOnRegistration?: boolean;
+  notificationEmail?: string;
 }
 
 const THEME_OPTIONS = [
@@ -27,15 +29,22 @@ export default function AdminSettings({ classId }: Props) {
   const [className, setClassName] = useState("כיתה ח׳2");
   const [schoolName, setSchoolName] = useState("חטיבת הביניים בן גוריון הרצליה");
   const [theme, setTheme] = useState("kita2");
+  const [notifyOnRegistration, setNotifyOnRegistration] = useState(false);
+  const [notificationEmail, setNotificationEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
+  const [testEmailStatus, setTestEmailStatus] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const guideItems = [
     "שם הכיתה מוצג בכותרת הראשית של האתר ובפאנל הניהול.",
     "שם בית הספר מוצג מעל כותרת הכיתה.",
     "ערכת הנושא קובעת את צבעי ההדגשה, הכפתורים והרקעים הגרפיים באתר.",
-    "השינויים נשמרים ישירות ומתעדכנים בזמן אמת לכל המבקרים.",
+    "התראות במייל מאפשרות לקבל עדכון מיידי בכל פעם שתלמיד או הורה נרשמים לאתר.",
   ];
 
   useEffect(() => {
@@ -47,6 +56,9 @@ export default function AdminSettings({ classId }: Props) {
           if (data.className) setClassName(data.className);
           if (data.schoolName) setSchoolName(data.schoolName);
           if (data.theme) setTheme(data.theme);
+          if (data.notifyOnRegistration !== undefined)
+            setNotifyOnRegistration(data.notifyOnRegistration);
+          if (data.notificationEmail) setNotificationEmail(data.notificationEmail);
         }
       } catch (err) {
         console.error("Error loading settings:", err);
@@ -68,6 +80,8 @@ export default function AdminSettings({ classId }: Props) {
           className: className.trim(),
           schoolName: schoolName.trim(),
           theme,
+          notifyOnRegistration,
+          notificationEmail: notificationEmail.trim(),
           updatedAt: new Date(),
         },
         { merge: true }
@@ -79,6 +93,49 @@ export default function AdminSettings({ classId }: Props) {
       alert("אירעה שגיאה בעת שמירת ההגדרות");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleSendTestEmail() {
+    if (!notificationEmail.trim()) {
+      setTestEmailStatus({
+        type: "error",
+        text: "נא להזין כתובת אימייל תקינה בשדה לפני שליחת בדיקה",
+      });
+      return;
+    }
+    setTestingEmail(true);
+    setTestEmailStatus(null);
+    try {
+      const res = await fetch("/api/notify-registration", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isTest: true,
+          recipientEmail: notificationEmail.trim(),
+          classId,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setTestEmailStatus({
+          type: "success",
+          text: "מייל בדיקה נשלח בהצלחה! בדקו את תיבת הדואר הנכנס או הספאם.",
+        });
+      } else {
+        setTestEmailStatus({
+          type: "error",
+          text: data.error || "שגיאה בשליחת מייל בדיקה. וודאו שפרטי ה-Gmail מוגדרים כראוי.",
+        });
+      }
+    } catch (err) {
+      console.error("Test email error:", err);
+      setTestEmailStatus({
+        type: "error",
+        text: "שגיאה בחיבור לשרת הדואר",
+      });
+    } finally {
+      setTestingEmail(false);
     }
   }
 
@@ -137,6 +194,85 @@ export default function AdminSettings({ classId }: Props) {
             />
             <span className="text-xs text-muted-foreground">מופיע מעל שם הכיתה בכותרת העליונה.</span>
           </div>
+        </div>
+
+        {/* Email Notifications Card */}
+        <div
+          className="rounded-2xl p-6 space-y-5"
+          style={{
+            background: "var(--card-bg)",
+            border: "1px solid var(--card-border)",
+            backdropFilter: "blur(12px)",
+          }}
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <span>📬</span> התראות במייל על בקשות הרשמה
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                קבלו הודעה מיידית למייל על כל תלמיד או הורה שנרשמים לאתר עם כפתור אישור מהיר.
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+              <input
+                type="checkbox"
+                checked={notifyOnRegistration}
+                onChange={(e) => setNotifyOnRegistration(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600" />
+            </label>
+          </div>
+
+          {notifyOnRegistration && (
+            <div className="space-y-4 pt-3 border-t border-white/10 animate-in fade-in duration-200">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-foreground">
+                  כתובת מייל לקבלת ההתראות (למשל: מייל המחנך/ת)
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2.5">
+                  <input
+                    type="email"
+                    value={notificationEmail}
+                    onChange={(e) => setNotificationEmail(e.target.value)}
+                    placeholder="teacher@gmail.com"
+                    required={notifyOnRegistration}
+                    className="flex-1 rounded-xl px-4 py-2.5 text-sm text-foreground outline-none transition-all"
+                    style={{
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                    }}
+                    dir="ltr"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendTestEmail}
+                    disabled={testingEmail || !notificationEmail}
+                    className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-foreground border border-white/10 transition-all cursor-pointer disabled:opacity-40 shrink-0"
+                  >
+                    {testingEmail ? "שולח בדיקה..." : "✉️ שלח מייל בדיקה"}
+                  </button>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  כל בקשת הרשמה חדשה תישלח לכתובת זו באופן אוטומטי.
+                </span>
+              </div>
+
+              {testEmailStatus && (
+                <div
+                  className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+                    testEmailStatus.type === "success"
+                      ? "bg-emerald-500/10 border border-emerald-500/25 text-emerald-300"
+                      : "bg-red-500/10 border border-red-500/25 text-red-300"
+                  }`}
+                >
+                  <span>{testEmailStatus.type === "success" ? "✓" : "⚠️"}</span>
+                  <span>{testEmailStatus.text}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Theme Card */}
