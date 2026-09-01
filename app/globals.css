@@ -1341,50 +1341,262 @@ body[data-class-theme="kita5"] {
   opacity: 1;
 }
 
-/* ── Seating print button ── */
-.seating-print-btn {
+/* ── Print buttons ── */
+.seating-print-btn,
+.schedule-print-btn {
   font-size: 0.82rem;
   padding: 6px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: #94a3b8;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.seating-print-btn:hover {
-  background: rgba(255,255,255,0.1);
+.seating-print-btn:hover,
+.schedule-print-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
   color: #e2e8f0;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Print Page Orientation (Must be root level for browser detection) ── */
+@page {
+  size: landscape;
+  margin: 14mm 22mm;
 }
 
 /* ── Print styles ── */
 @media print {
-  @page { size: landscape; margin: 16mm; }
-
-  /* Hide everything, then reveal only the seating area */
+  html,
   body {
-    visibility: hidden !important;
-    background: #fff !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  #seating-print-area {
-    visibility: visible !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    padding: 16px !important;
-  }
-
-  #seating-print-area * {
-    visibility: visible !important;
-  }
-
-  .seating-print-btn {
+  /* ── 1. Schedule Print Specifics ── */
+  body.print-schedule-mode nav,
+  body.print-schedule-mode header,
+  body.print-schedule-mode footer,
+  body.print-schedule-mode .geo-bg,
+  body.print-schedule-mode svg,
+  body.print-schedule-mode main > div,
+  body.print-schedule-mode section:not(#schedule),
+  body.print-schedule-mode section#schedule > h2,
+  body.print-schedule-mode .schedule-screen-controls,
+  body.print-schedule-mode .schedule-screen-view,
+  body.print-schedule-mode .schedule-print-btn,
+  body.print-schedule-mode .seating-print-btn,
+  body.print-schedule-mode button {
     display: none !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
   }
 
-  /* Black and white */
+  body.print-schedule-mode .min-h-screen,
+  body.print-schedule-mode [data-class-theme],
+  body.print-schedule-mode main,
+  body.print-schedule-mode section#schedule {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    border: none !important;
+  }
+
+  body.print-schedule-mode #schedule-print-area {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 12mm 26mm !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    background: #ffffff !important;
+  }
+
+  body.print-schedule-mode .schedule-print-view {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    font-family: inherit;
+    direction: rtl;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  .schedule-print-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-bottom: 2px solid #0f172a !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .schedule-print-school {
+    font-size: 11pt !important;
+    color: #475569 !important;
+    margin: 0 0 3px 0 !important;
+    font-weight: 600 !important;
+  }
+
+  .schedule-print-title {
+    font-size: 17pt !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  .schedule-print-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    table-layout: fixed !important;
+    margin-top: 4px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  .schedule-print-table th,
+  .schedule-print-table td {
+    border: 1px solid #94a3b8 !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    color: #0f172a !important;
+  }
+
+  .schedule-print-table th {
+    background: #f1f5f9 !important;
+    font-weight: 700 !important;
+    font-size: 11pt !important;
+    padding: 9px 4px !important;
+    color: #0f172a !important;
+    border-bottom: 2px solid #334155 !important;
+  }
+
+  .schedule-print-table .th-period {
+    width: 6.5% !important;
+  }
+
+  .schedule-print-table .th-time {
+    width: 14.5% !important;
+  }
+
+  .schedule-print-table .th-day {
+    width: 13.16% !important;
+  }
+
+  .schedule-print-table td {
+    padding: 8px 4px !important;
+    font-size: 10.5pt !important;
+    background: #ffffff !important;
+  }
+
+  .schedule-print-table .td-period {
+    font-weight: 700 !important;
+    font-size: 11.5pt !important;
+    background: #f8fafc !important;
+  }
+
+  .schedule-print-table .period-badge {
+    display: inline-block !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+  }
+
+  .schedule-print-table .td-time {
+    font-size: 8.5pt !important;
+    color: #475569 !important;
+    white-space: nowrap !important;
+    direction: ltr !important;
+  }
+
+  .schedule-print-table .td-lesson {
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    font-size: 10.5pt !important;
+    line-height: 1.25 !important;
+  }
+
+  .schedule-print-table .empty-lesson {
+    color: #cbd5e1 !important;
+    font-weight: normal !important;
+  }
+
+  .schedule-print-table .schedule-print-break td {
+    background: #f1f5f9 !important;
+    padding: 5px 6px !important;
+    font-size: 9pt !important;
+  }
+
+  .schedule-print-table .td-break-text {
+    font-weight: 600 !important;
+    color: #334155 !important;
+    font-style: italic !important;
+  }
+
+  /* ── 2. Seating Print Specifics ── */
+  body.print-seating-mode nav,
+  body.print-seating-mode header,
+  body.print-seating-mode footer,
+  body.print-seating-mode .geo-bg,
+  body.print-seating-mode #announcements,
+  body.print-seating-mode #emergency-schedule,
+  body.print-seating-mode #events,
+  body.print-seating-mode #schedule,
+  body.print-seating-mode #teachers,
+  body.print-seating-mode #gallery,
+  body.print-seating-mode #links,
+  body.print-seating-mode main > div:not(section),
+  body.print-seating-mode section#seating > h2,
+  body.print-seating-mode .seating-print-btn {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.print-seating-mode .min-h-screen {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  body.print-seating-mode main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  body.print-seating-mode section#seating {
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.print-seating-mode #seating-print-area {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+  }
+
+  /* Black and white seating */
   .classroom {
     overflow: visible !important;
   }

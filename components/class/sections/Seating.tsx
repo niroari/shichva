@@ -89,6 +89,17 @@ export default function Seating({ classId }: { classId: string }) {
     return () => observer.disconnect();
   }, [rows]);
 
+  const handlePrint = () => {
+    document.body.classList.add("print-seating-mode");
+    window.print();
+    const cleanup = () => {
+      document.body.classList.remove("print-seating-mode");
+      window.removeEventListener("afterprint", cleanup);
+    };
+    window.addEventListener("afterprint", cleanup);
+    setTimeout(cleanup, 2000);
+  };
+
   if (loading) return <p className="text-muted-foreground text-center py-5">טוען מקומות ישיבה...</p>;
   if (error)   return <p className="text-red-400 text-center py-5">שגיאה בטעינת מקומות ישיבה</p>;
   if (rows.length === 0) return <p className="text-muted-foreground text-center py-5">אין נתונים</p>;
@@ -97,8 +108,8 @@ export default function Seating({ classId }: { classId: string }) {
     <div id="seating-print-area">
       <div className="flex justify-end mb-3">
         <button
-          onClick={() => window.print()}
-          className="seating-print-btn"
+          onClick={handlePrint}
+          className="seating-print-btn cursor-pointer active:scale-95"
         >
           🖨️ הדפסה
         </button>

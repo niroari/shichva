@@ -106,7 +106,11 @@ export default function HomePage() {
 
           <section id="schedule" className="py-16 border-t border-white/10">
             <h2 className="text-2xl font-bold text-foreground mb-6">מערכת שעות</h2>
-            <Schedule classId={classId} />
+            <Schedule
+              classId={classId}
+              classNameTitle={settings.className}
+              schoolNameTitle={settings.schoolName}
+            />
           </section>
 
           <section id="events" className="py-16 border-t border-white/10">
