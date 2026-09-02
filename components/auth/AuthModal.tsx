@@ -107,21 +107,24 @@ export default function AuthModal({
 
       await setDoc(doc(db, "users", user.uid), newProfile);
 
-      // Send email notification to teacher/admin if not whitelisted
+      // Send email notification to teacher/admin if pending approval
       if (!isWhitelisted) {
-        fetch("/api/notify-registration", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            classId,
-            fullName: fullName.trim(),
-            email: normalizedEmail,
-            role,
-            studentName: role === "parent" ? studentName.trim() : undefined,
-          }),
-        }).catch((notifyErr) => {
-          console.warn("Failed to trigger registration notification email:", notifyErr);
-        });
+        try {
+          await fetch("/api/notify-registration", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            keepalive: true,
+            body: JSON.stringify({
+              classId,
+              fullName: fullName.trim(),
+              email: normalizedEmail,
+              role,
+              studentName: role === "parent" ? studentName.trim() : undefined,
+            }),
+          });
+        } catch (notifyErr) {
+          console.error("Failed to trigger registration notification email:", notifyErr);
+        }
       }
     } catch (err: unknown) {
       console.error("Registration error:", err);

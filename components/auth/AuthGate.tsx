@@ -35,25 +35,6 @@ export default function AuthGate({
         // Subscribe to user profile in Firestore
         const userDocRef = doc(db, "users", currentUser.uid);
 
-        // Check if doc exists; if not (e.g. initial teacher/admin login), check or seed
-        try {
-          const snap = await getDoc(userDocRef);
-          if (!snap.exists()) {
-            // Auto-provision initial profile (especially helpful for existing teacher accounts)
-            const initialProfile: UserProfile = {
-              uid: currentUser.uid,
-              email: currentUser.email || "",
-              fullName: currentUser.displayName || currentUser.email?.split("@")[0] || "משתמש",
-              role: "admin", // Existing users before the gate are assumed admins or will be reviewed
-              status: "approved",
-              createdAt: new Date().toISOString(),
-            };
-            await setDoc(userDocRef, initialProfile);
-          }
-        } catch (e) {
-          console.warn("Could not check/seed user profile:", e);
-        }
-
         unsubscribeProfile = onSnapshot(
           userDocRef,
           (docSnap) => {

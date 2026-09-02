@@ -68,17 +68,32 @@ export async function POST(request: Request) {
     }
 
     // ── Handle Real Registration Event ──
+    console.log("notify-registration processing registration for:", {
+      classId,
+      fullName,
+      email,
+      role,
+    });
+
     const settingsSnap = await getDoc(doc(db, "classes", classId, "meta", "settings"));
     const settings = settingsSnap.exists() ? settingsSnap.data() : {};
 
     const notifyEnabled = settings.notifyOnRegistration;
     const targetEmail = settings.notificationEmail?.trim();
 
+    console.log("Class settings retrieved:", {
+      classId,
+      settingsFound: settingsSnap.exists(),
+      notifyEnabled,
+      targetEmail,
+    });
+
     if (!notifyEnabled || !targetEmail) {
+      console.log("Skipping email notification: notifyEnabled =", notifyEnabled, "targetEmail =", targetEmail);
       return NextResponse.json({
         success: true,
         skipped: true,
-        reason: "Notifications disabled or no email set",
+        reason: "Notifications disabled or no email set in settings",
       });
     }
 
