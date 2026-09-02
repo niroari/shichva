@@ -4,7 +4,8 @@ import "./globals.css";
 
 const alef = Alef({
   weight: ["400", "700"],
-  subsets: ["hebrew"],
+  subsets: ["hebrew", "latin"],
+  display: "swap",
   variable: "--font-alef",
 });
 
@@ -28,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="he" dir="rtl" className={`${alef.variable} h-full dark`}>
+    <html lang="he" dir="rtl" className={`${alef.variable} ${alef.className} h-full dark`}>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -47,7 +48,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full font-alef antialiased">{children}</body>
+      <body className={`${alef.className} min-h-full font-sans antialiased`}>{children}</body>
     </html>
   );
 }
