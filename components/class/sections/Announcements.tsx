@@ -16,6 +16,8 @@ interface Announcement {
   fileUrl?: string;
   fileName?: string;
   fileType?: "image" | "pdf";
+  linkUrl?: string;
+  linkTitle?: string;
   important: boolean;
 }
 
@@ -110,7 +112,7 @@ export default function Announcements({ classId }: { classId: string }) {
       <div className="space-y-2.5">
         {items.map((ann) => {
           const hasContent = Boolean(
-            ann.body?.trim() || ann.imageUrl || ann.fileUrl
+            ann.body?.trim() || ann.imageUrl || ann.fileUrl || ann.linkUrl?.trim()
           );
           const isExpanded = expandedIds.has(ann.id);
 
@@ -170,6 +172,29 @@ export default function Announcements({ classId }: { classId: string }) {
                     </p>
                   )}
 
+                  {/* External Website Link */}
+                  {ann.linkUrl && (
+                    <div className="mt-2.5 flex justify-start w-full">
+                      <a
+                        href={
+                          ann.linkUrl.startsWith("http://") || ann.linkUrl.startsWith("https://")
+                            ? ann.linkUrl
+                            : `https://${ann.linkUrl}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 dark:bg-violet-500/15 dark:hover:bg-violet-500/25 border border-violet-500/30 text-violet-700 dark:text-violet-200 transition-all text-xs font-semibold shadow-xs group cursor-pointer"
+                      >
+                        <span className="text-sm">🔗</span>
+                        <span>{ann.linkTitle || "מעבר לאתר / קישור מצורף"}</span>
+                        <span className="text-[10px] opacity-70 group-hover:opacity-100 group-hover:-translate-x-0.5 transition-transform">
+                          ↗
+                        </span>
+                      </a>
+                    </div>
+                  )}
+
                   {(() => {
                     const fileUrl = ann.imageUrl || ann.fileUrl;
                     if (!fileUrl) return null;
@@ -181,7 +206,7 @@ export default function Announcements({ classId }: { classId: string }) {
 
                     if (isPdf) {
                       return (
-                        <div className="mt-2.5 flex justify-center w-full">
+                        <div className="mt-2.5 flex justify-center sm:justify-start w-full">
                           <button
                             type="button"
                             onClick={() => openPdf(fileUrl)}
@@ -196,7 +221,7 @@ export default function Announcements({ classId }: { classId: string }) {
                     }
 
                     return (
-                      <div className="mt-2.5 flex justify-center w-full">
+                      <div className="mt-2.5 flex justify-center sm:justify-start w-full">
                         <div
                           className="relative w-full max-w-[220px] sm:max-w-[260px] h-28 sm:h-36 rounded-lg overflow-hidden border border-black/10 dark:border-white/10 cursor-pointer group shadow-xs"
                           onClick={() => setLightboxImage({ url: fileUrl, title: ann.title })}

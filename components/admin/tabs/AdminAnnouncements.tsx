@@ -33,6 +33,8 @@ interface Announcement {
   fileName?: string;
   fileType?: "image" | "pdf";
   imageStoragePath?: string;
+  linkUrl?: string;
+  linkTitle?: string;
   important: boolean;
 }
 
@@ -70,6 +72,8 @@ export default function AdminAnnouncements({ classId }: Props) {
   const [newDate, setNewDate] = useState("");
   const [newTitle, setNewTitle] = useState("");
   const [newBody, setNewBody] = useState("");
+  const [newLinkUrl, setNewLinkUrl] = useState("");
+  const [newLinkTitle, setNewLinkTitle] = useState("");
   const [newImportant, setNewImportant] = useState(false);
   const [newFile, setNewFile] = useState<File | null>(null);
   const [newFilePreview, setNewFilePreview] = useState<string | null>(null);
@@ -83,6 +87,8 @@ export default function AdminAnnouncements({ classId }: Props) {
   const [editDate, setEditDate] = useState("");
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
+  const [editLinkUrl, setEditLinkUrl] = useState("");
+  const [editLinkTitle, setEditLinkTitle] = useState("");
   const [editImportant, setEditImportant] = useState(false);
   const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
   const [editFileName, setEditFileName] = useState<string | null>(null);
@@ -409,6 +415,12 @@ export default function AdminAnnouncements({ classId }: Props) {
         title: newTitle.trim(),
         body: newBody.trim(),
         important: newImportant,
+        ...(newLinkUrl.trim()
+          ? {
+              linkUrl: newLinkUrl.trim(),
+              linkTitle: newLinkTitle.trim() || "",
+            }
+          : {}),
         ...(imageUrl
           ? {
               imageUrl,
@@ -423,6 +435,8 @@ export default function AdminAnnouncements({ classId }: Props) {
       setNewDate("");
       setNewTitle("");
       setNewBody("");
+      setNewLinkUrl("");
+      setNewLinkTitle("");
       setNewImportant(false);
       clearNewFile();
     } catch (err) {
@@ -440,6 +454,8 @@ export default function AdminAnnouncements({ classId }: Props) {
     setEditDate(item.date);
     setEditTitle(item.title);
     setEditBody(item.body);
+    setEditLinkUrl(item.linkUrl || "");
+    setEditLinkTitle(item.linkTitle || "");
     setEditImportant(item.important);
     setEditImageUrl(item.imageUrl || item.fileUrl || null);
     setEditFileName(item.fileName || null);
@@ -454,6 +470,8 @@ export default function AdminAnnouncements({ classId }: Props) {
 
   function cancelEdit() {
     setEditId(null);
+    setEditLinkUrl("");
+    setEditLinkTitle("");
     clearEditFile();
     setEditRemoveImage(false);
   }
@@ -500,6 +518,8 @@ export default function AdminAnnouncements({ classId }: Props) {
         date: editDate.trim(),
         title: editTitle.trim(),
         body: editBody.trim(),
+        linkUrl: editLinkUrl.trim() || null,
+        linkTitle: editLinkTitle.trim() || null,
         important: editImportant,
         imageUrl: finalImageUrl,
         fileUrl: finalImageUrl,
@@ -509,6 +529,8 @@ export default function AdminAnnouncements({ classId }: Props) {
       });
 
       setEditId(null);
+      setEditLinkUrl("");
+      setEditLinkTitle("");
       clearEditFile();
     } catch (err) {
       console.error("Error saving announcement edit:", err);
@@ -535,7 +557,7 @@ export default function AdminAnnouncements({ classId }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <AdminGuide items={[
-        "לחץ על הטופס למעלה כדי להוסיף הודעה חדשה (כולל צירוף תמונה או מכתב ב-PDF)",
+        "לחץ על הטופס למעלה כדי להוסיף הודעה חדשה (כולל צירוף תמונה, מסמך PDF או קישור לאתר חיצוני)",
         'סמן "הודעה דחופה" כדי שתופיע עם רקע בולט',
         "לעריכת הודעה קיימת — לחץ על כפתור העריכה בשורה שלה",
         "למחיקה — לחץ על הכפתור האדום",
@@ -573,6 +595,29 @@ export default function AdminAnnouncements({ classId }: Props) {
               onChange={(e) => setNewBody(e.target.value)}
               rows={3}
             />
+          </div>
+
+          {/* External Link Attachment */}
+          <div className="form-row">
+            <div className="form-group" style={{ flex: 1.5 }}>
+              <label>קישור לאתר חיצוני (אופציונלי)</label>
+              <input
+                type="url"
+                placeholder="https://example.com"
+                value={newLinkUrl}
+                onChange={(e) => setNewLinkUrl(e.target.value)}
+                dir="ltr"
+              />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>כותרת הקישור (אופציונלי)</label>
+              <input
+                type="text"
+                placeholder="למשל: כניסה לטופס / מפגש"
+                value={newLinkTitle}
+                onChange={(e) => setNewLinkTitle(e.target.value)}
+              />
+            </div>
           </div>
 
           {/* Media / File Attachment */}
@@ -687,9 +732,9 @@ export default function AdminAnnouncements({ classId }: Props) {
                 <tr>
                   <th style={{ width: 45, textAlign: "center" }}>סדר</th>
                   <th style={{ width: 70 }}>תאריך</th>
-                  <th style={{ width: 70 }}>קובץ / מדיה</th>
+                  <th style={{ width: 85 }}>קובץ / קישור</th>
                   <th>כותרת</th>
-                  <th>תוכן</th>
+                  <th>תוכן וקישור</th>
                   <th style={{ width: 60 }}>חשוב</th>
                   <th style={{ width: 130 }}>פעולות</th>
                 </tr>
@@ -798,12 +843,32 @@ export default function AdminAnnouncements({ classId }: Props) {
                         />
                       </td>
                       <td>
-                        <input
-                          className="inline-input"
-                          value={editBody}
-                          onChange={(e) => setEditBody(e.target.value)}
-                          style={{ minWidth: 200 }}
-                        />
+                        <div className="flex flex-col gap-1.5 py-1">
+                          <input
+                            className="inline-input"
+                            value={editBody}
+                            onChange={(e) => setEditBody(e.target.value)}
+                            placeholder="תוכן ההודעה..."
+                            style={{ minWidth: 200 }}
+                          />
+                          <div className="flex gap-1">
+                            <input
+                              className="inline-input text-xs"
+                              value={editLinkUrl}
+                              onChange={(e) => setEditLinkUrl(e.target.value)}
+                              placeholder="כתובת קישור (https://...)"
+                              dir="ltr"
+                              style={{ flex: 1.5 }}
+                            />
+                            <input
+                              className="inline-input text-xs"
+                              value={editLinkTitle}
+                              onChange={(e) => setEditLinkTitle(e.target.value)}
+                              placeholder="כותרת קישור"
+                              style={{ flex: 1 }}
+                            />
+                          </div>
+                        </div>
                       </td>
                       <td>
                         <input
@@ -882,32 +947,53 @@ export default function AdminAnnouncements({ classId }: Props) {
                       </td>
                       <td className="cell-nowrap cell-dim">{item.date}</td>
                       <td>
-                        {itemUrl ? (
-                          isPdfItem ? (
-                            <button
-                              type="button"
-                              onClick={() => openPdf(itemUrl)}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-500/10 text-red-400 text-xs hover:bg-red-500/20 border border-red-500/20 cursor-pointer"
-                              title={item.fileName || "פתח קובץ PDF"}
+                        <div className="flex flex-col gap-1 items-start">
+                          {itemUrl && (
+                            isPdfItem ? (
+                              <button
+                                type="button"
+                                onClick={() => openPdf(itemUrl)}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-500/10 text-red-400 text-xs hover:bg-red-500/20 border border-red-500/20 cursor-pointer"
+                                title={item.fileName || "פתח קובץ PDF"}
+                              >
+                                <span>📄</span>
+                                <span className="text-[10px] font-bold">PDF</span>
+                              </button>
+                            ) : (
+                              <div className="relative w-9 h-9 rounded-md overflow-hidden border border-white/10">
+                                <Image
+                                  src={itemUrl}
+                                  alt={item.title}
+                                  fill
+                                  unoptimized
+                                  sizes="36px"
+                                  className="object-cover"
+                                />
+                              </div>
+                            )
+                          )}
+                          {item.linkUrl && (
+                            <a
+                              href={
+                                item.linkUrl.startsWith("http://") || item.linkUrl.startsWith("https://")
+                                  ? item.linkUrl
+                                  : `https://${item.linkUrl}`
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-400 text-xs hover:bg-violet-500/20 border border-violet-500/20 max-w-[110px]"
+                              title={item.linkUrl}
                             >
-                              <span>📄</span>
-                              <span className="text-[10px] font-bold">PDF</span>
-                            </button>
-                          ) : (
-                            <div className="relative w-10 h-10 rounded-md overflow-hidden border border-white/10">
-                              <Image
-                                src={itemUrl}
-                                alt={item.title}
-                                fill
-                                unoptimized
-                                sizes="40px"
-                                className="object-cover"
-                              />
-                            </div>
-                          )
-                        ) : (
-                          <span className="text-muted-foreground text-xs">—</span>
-                        )}
+                              <span>🔗</span>
+                              <span className="truncate text-[10px] font-medium">
+                                {item.linkTitle || "קישור"}
+                              </span>
+                            </a>
+                          )}
+                          {!itemUrl && !item.linkUrl && (
+                            <span className="text-muted-foreground text-xs">—</span>
+                          )}
+                        </div>
                       </td>
                       <td className="cell-trunc">
                         {item.important && <span className="important-badge">חשוב</span>}{" "}
