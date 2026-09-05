@@ -726,6 +726,8 @@ body[data-class-theme="kita5"] {
   .btn-danger { background: rgba(239,68,68,0.15);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.3);  padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; transition: background 0.15s; }
   .btn-save   { background: rgba(52,211,153,0.15); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.3); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
   .btn-cancel { background: rgba(255,255,255,0.06); color: #94a3b8; border: 1px solid rgba(255,255,255,0.12); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
+  .btn-warning { background: rgba(245,158,11,0.18); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+  .btn-warning:hover { background: rgba(245,158,11,0.3); }
   .btn-edit:hover   { background: rgba(59,130,246,0.3); }
   .btn-danger:hover { background: rgba(239,68,68,0.28); }
 

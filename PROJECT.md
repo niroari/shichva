@@ -26,7 +26,7 @@ In compliance with student privacy protection requirements, the site is gated: s
 | Collection | One doc per | Key fields |
 |---|---|---|
 | `users` | registered user | `uid`, `email`, `fullName`, `role` (student/parent/admin), `studentName`, `status` (pending/approved/rejected), `createdAt`, `approvedAt` |
-| `classes/{classId}/announcements` | announcement | `order`, `date`, `title`, `body`, `important`, `imageUrl`, `fileUrl` |
+| `classes/{classId}/announcements` | announcement | `order`, `date`, `title`, `body`, `important`, `hidden`, `imageUrl`, `fileUrl` |
 | `classes/{classId}/events` | event | `date` (Timestamp), `title`, `time`, `category`, `endDate` (optional Timestamp) |
 | `classes/{classId}/schedule` | lesson row | `order`, `period`, `time`, `sun`–`fri`, `type` |
 | `classes/{classId}/emergency_schedule` | lesson row | same fields as `schedule` |
@@ -44,7 +44,7 @@ In compliance with student privacy protection requirements, the site is gated: s
 | `emergency` | `visible: boolean` | Whether emergency schedule is shown on site |
 
 ## Public Sections (Protected behind Auth Gate)
-1. **הודעות** — Announcements (important flag = highlighted)
+1. **הודעות** — Announcements (important flag = highlighted, hidden flag = excluded from public view)
 2. **מערכת בחירום** — Emergency schedule (hidden by default, orange styling, toggled from admin)
 3. **מערכת שעות** — Weekly schedule (sticky columns on mobile, scrollable)
 4. **אירועים** — Events (monthly view, category filter)
@@ -56,7 +56,7 @@ In compliance with student privacy protection requirements, the site is gated: s
 ## Admin Panel Tabs
 | Tab | Key features |
 |---|---|
-| הודעות | Add/edit/delete announcements, image & PDF attachments |
+| הודעות | Add/edit/delete/hide announcements, image & PDF attachments, one-click visibility toggle |
 | אירועים | Add/delete events with date range support and Google Calendar import |
 | מורים | Add/delete teachers |
 | מערכת שעות | Drag-and-drop subject palette, inline time editing |

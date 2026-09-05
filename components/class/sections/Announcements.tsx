@@ -19,6 +19,7 @@ interface Announcement {
   linkUrl?: string;
   linkTitle?: string;
   important: boolean;
+  hidden?: boolean;
 }
 
 function openPdf(url: string) {
@@ -73,6 +74,7 @@ export default function Announcements({ classId }: { classId: string }) {
       (snapshot) => {
         const data = snapshot.docs
           .map((doc) => ({ id: doc.id, ...doc.data() } as Announcement))
+          .filter((ann) => !ann.hidden)
           .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
         setItems(data);
         setLoading(false);

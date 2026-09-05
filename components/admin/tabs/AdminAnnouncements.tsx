@@ -36,6 +36,7 @@ interface Announcement {
   linkUrl?: string;
   linkTitle?: string;
   important: boolean;
+  hidden?: boolean;
 }
 
 interface Props {
@@ -75,6 +76,7 @@ export default function AdminAnnouncements({ classId }: Props) {
   const [newLinkUrl, setNewLinkUrl] = useState("");
   const [newLinkTitle, setNewLinkTitle] = useState("");
   const [newImportant, setNewImportant] = useState(false);
+  const [newHidden, setNewHidden] = useState(false);
   const [newFile, setNewFile] = useState<File | null>(null);
   const [newFilePreview, setNewFilePreview] = useState<string | null>(null);
   const [newFileType, setNewFileType] = useState<"image" | "pdf" | null>(null);
@@ -90,6 +92,7 @@ export default function AdminAnnouncements({ classId }: Props) {
   const [editLinkUrl, setEditLinkUrl] = useState("");
   const [editLinkTitle, setEditLinkTitle] = useState("");
   const [editImportant, setEditImportant] = useState(false);
+  const [editHidden, setEditHidden] = useState(false);
   const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
   const [editFileName, setEditFileName] = useState<string | null>(null);
   const [editFileType, setEditFileType] = useState<"image" | "pdf" | null>(null);
@@ -415,6 +418,7 @@ export default function AdminAnnouncements({ classId }: Props) {
         title: newTitle.trim(),
         body: newBody.trim(),
         important: newImportant,
+        hidden: newHidden,
         ...(newLinkUrl.trim()
           ? {
               linkUrl: newLinkUrl.trim(),
@@ -438,6 +442,7 @@ export default function AdminAnnouncements({ classId }: Props) {
       setNewLinkUrl("");
       setNewLinkTitle("");
       setNewImportant(false);
+      setNewHidden(false);
       clearNewFile();
     } catch (err) {
       console.error("Error adding announcement:", err);
@@ -457,6 +462,7 @@ export default function AdminAnnouncements({ classId }: Props) {
     setEditLinkUrl(item.linkUrl || "");
     setEditLinkTitle(item.linkTitle || "");
     setEditImportant(item.important);
+    setEditHidden(Boolean(item.hidden));
     setEditImageUrl(item.imageUrl || item.fileUrl || null);
     setEditFileName(item.fileName || null);
     const isPdf =
@@ -472,6 +478,7 @@ export default function AdminAnnouncements({ classId }: Props) {
     setEditId(null);
     setEditLinkUrl("");
     setEditLinkTitle("");
+    setEditHidden(false);
     clearEditFile();
     setEditRemoveImage(false);
   }
@@ -521,6 +528,7 @@ export default function AdminAnnouncements({ classId }: Props) {
         linkUrl: editLinkUrl.trim() || null,
         linkTitle: editLinkTitle.trim() || null,
         important: editImportant,
+        hidden: editHidden,
         imageUrl: finalImageUrl,
         fileUrl: finalImageUrl,
         fileName: finalFileName,
@@ -531,6 +539,7 @@ export default function AdminAnnouncements({ classId }: Props) {
       setEditId(null);
       setEditLinkUrl("");
       setEditLinkTitle("");
+      setEditHidden(false);
       clearEditFile();
     } catch (err) {
       console.error("Error saving announcement edit:", err);
@@ -539,6 +548,18 @@ export default function AdminAnnouncements({ classId }: Props) {
     } finally {
       setEditSaving(false);
       setEditUploadProgress(null);
+    }
+  }
+
+  async function handleToggleHidden(item: Announcement) {
+    try {
+      await updateDoc(doc(db, "classes", classId, "announcements", item.id), {
+        hidden: !item.hidden,
+      });
+    } catch (err) {
+      console.error("Error toggling hidden state:", err);
+      const msg = err instanceof Error ? err.message : "שגיאה לא ידועה";
+      alert(`שגיאה בעדכון מצב ההודעה: ${msg}`);
     }
   }
 
@@ -559,8 +580,9 @@ export default function AdminAnnouncements({ classId }: Props) {
       <AdminGuide items={[
         "לחץ על הטופס למעלה כדי להוסיף הודעה חדשה (כולל צירוף תמונה, מסמך PDF או קישור לאתר חיצוני)",
         'סמן "הודעה דחופה" כדי שתופיע עם רקע בולט',
+        'להסתרת הודעה מהאתר (ללא מחיקה) — לחץ על כפתור "הסתר" (או "הצג" להחזרה)',
         "לעריכת הודעה קיימת — לחץ על כפתור העריכה בשורה שלה",
-        "למחיקה — לחץ על הכפתור האדום",
+        "למחיקה לצמיתות — לחץ על הכפתור האדום",
       ]} />
       {/* Add form */}
       <div className="admin-card">
@@ -693,7 +715,7 @@ export default function AdminAnnouncements({ classId }: Props) {
             )}
           </div>
 
-          <div className="flex items-center gap-3 pt-1">
+          <div className="flex items-center gap-4 pt-1 flex-wrap">
             <label className="form-check">
               <input
                 type="checkbox"
@@ -701,6 +723,14 @@ export default function AdminAnnouncements({ classId }: Props) {
                 onChange={(e) => setNewImportant(e.target.checked)}
               />
               <span className="text-sm text-muted-foreground">הודעה חשובה</span>
+            </label>
+            <label className="form-check">
+              <input
+                type="checkbox"
+                checked={newHidden}
+                onChange={(e) => setNewHidden(e.target.checked)}
+              />
+              <span className="text-sm text-muted-foreground">הסתר הודעה (לא תוצג באתר)</span>
             </label>
             <button
               type="submit"
@@ -735,8 +765,8 @@ export default function AdminAnnouncements({ classId }: Props) {
                   <th style={{ width: 85 }}>קובץ / קישור</th>
                   <th>כותרת</th>
                   <th>תוכן וקישור</th>
-                  <th style={{ width: 60 }}>חשוב</th>
-                  <th style={{ width: 130 }}>פעולות</th>
+                  <th style={{ width: 75, textAlign: "center" }}>סטטוס</th>
+                  <th style={{ width: 175 }}>פעולות</th>
                 </tr>
               </thead>
               <tbody>
@@ -871,11 +901,24 @@ export default function AdminAnnouncements({ classId }: Props) {
                         </div>
                       </td>
                       <td>
-                        <input
-                          type="checkbox"
-                          checked={editImportant}
-                          onChange={(e) => setEditImportant(e.target.checked)}
-                        />
+                        <div className="flex flex-col gap-1 items-start text-xs">
+                          <label className="flex items-center gap-1 cursor-pointer select-none" title="סמן כהודעה חשובה">
+                            <input
+                              type="checkbox"
+                              checked={editImportant}
+                              onChange={(e) => setEditImportant(e.target.checked)}
+                            />
+                            <span>חשוב</span>
+                          </label>
+                          <label className="flex items-center gap-1 cursor-pointer select-none text-amber-400" title="הסתר הודעה מהאתר">
+                            <input
+                              type="checkbox"
+                              checked={editHidden}
+                              onChange={(e) => setEditHidden(e.target.checked)}
+                            />
+                            <span>מוסתר</span>
+                          </label>
+                        </div>
                       </td>
                       <td>
                         <div className="flex flex-col gap-1.5">
@@ -912,6 +955,8 @@ export default function AdminAnnouncements({ classId }: Props) {
                           ? "opacity-30 bg-purple-500/10"
                           : isDragOver
                           ? "bg-purple-500/20 outline outline-1 outline-purple-400"
+                          : item.hidden
+                          ? "opacity-70 bg-amber-500/[0.03]"
                           : ""
                       }`}
                     >
@@ -996,15 +1041,50 @@ export default function AdminAnnouncements({ classId }: Props) {
                         </div>
                       </td>
                       <td className="cell-trunc">
-                        {item.important && <span className="important-badge">חשוב</span>}{" "}
-                        {item.title}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {item.hidden && (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                              מוסתר
+                            </span>
+                          )}
+                          {item.important && <span className="important-badge">חשוב</span>}
+                          <span>{item.title}</span>
+                        </div>
                       </td>
                       <td className="cell-trunc cell-dim">{item.body || "—"}</td>
-                      <td style={{ textAlign: "center" }}>{item.important ? "✓" : ""}</td>
+                      <td style={{ textAlign: "center" }}>
+                        <div className="flex flex-col items-center gap-0.5 text-xs">
+                          {item.important && (
+                            <span className="text-red-400 font-medium text-[11px]" title="הודעה חשובה">
+                              חשוב
+                            </span>
+                          )}
+                          {item.hidden && (
+                            <span className="text-amber-400 font-medium text-[11px]" title="הודעה מוסתרת מהאתר">
+                              מוסתר
+                            </span>
+                          )}
+                          {!item.important && !item.hidden && (
+                            <span className="text-muted-foreground text-xs">—</span>
+                          )}
+                        </div>
+                      </td>
                       <td className="cell-nowrap">
-                        <div className="flex gap-2">
-                          <button className="btn-edit" onClick={() => startEdit(item)}>עריכה</button>
-                          <button className="btn-danger" onClick={() => handleDelete(item)}>מחיקה</button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            className={item.hidden ? "btn-warning" : "btn-cancel"}
+                            onClick={() => handleToggleHidden(item)}
+                            title={item.hidden ? "הצג הודעה באתר" : "הסתר הודעה מהאתר"}
+                          >
+                            {item.hidden ? "הצג" : "הסתר"}
+                          </button>
+                          <button className="btn-edit" onClick={() => startEdit(item)}>
+                            עריכה
+                          </button>
+                          <button className="btn-danger" onClick={() => handleDelete(item)}>
+                            מחיקה
+                          </button>
                         </div>
                       </td>
                     </tr>
