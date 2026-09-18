@@ -10,56 +10,27 @@ export default function AdminGuide({ items }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div
-      style={{
-        background: "rgba(99,102,241,0.07)",
-        border: "1px solid rgba(99,102,241,0.2)",
-        borderRadius: 12,
-        marginBottom: 8,
-        overflow: "hidden",
-      }}
-    >
+    <div className="bg-indigo-500/10 border border-indigo-500/20 dark:bg-indigo-950/20 dark:border-indigo-500/20 rounded-xl mb-3 overflow-hidden transition-colors">
       <button
         onClick={() => setOpen((v) => !v)}
-        style={{
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "10px 16px",
-          fontSize: "0.85rem",
-          color: "#a5b4fc",
-          cursor: "pointer",
-        }}
+        className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-indigo-700 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-200 cursor-pointer transition-colors"
       >
-        <span>💡 מדריך מהיר</span>
-        <span style={{ fontSize: "0.75rem", opacity: 0.7 }}>{open ? "סגור ▲" : "פתח ▼"}</span>
+        <span className="flex items-center gap-1.5">
+          <span>💡</span>
+          <span>מדריך מהיר</span>
+        </span>
+        <span className="text-xs opacity-70">{open ? "סגור ▲" : "פתח ▼"}</span>
       </button>
 
       {open && (
-        <ul
-          style={{
-            padding: "0 16px 12px 16px",
-            margin: 0,
-            listStyle: "none",
-            display: "flex",
-            flexDirection: "column",
-            gap: 6,
-          }}
-        >
+        <ul className="px-4 pb-3 pt-0 m-0 list-none flex flex-col gap-1.5 border-t border-indigo-500/10 dark:border-indigo-500/10 mt-1">
           {items.map((item, i) => (
             <li
               key={i}
-              style={{
-                fontSize: "0.83rem",
-                color: "#cbd5e1",
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 8,
-              }}
+              className="text-xs text-slate-700 dark:text-slate-300 flex items-start gap-2 pt-1.5 leading-relaxed"
             >
-              <span style={{ color: "#818cf8", marginTop: 1, flexShrink: 0 }}>•</span>
-              {item}
+              <span className="text-indigo-600 dark:text-indigo-400 font-bold mt-0.5 flex-shrink-0">•</span>
+              <span>{item}</span>
             </li>
           ))}
         </ul>
@@ -67,3 +38,4 @@ export default function AdminGuide({ items }: Props) {
     </div>
   );
 }
+

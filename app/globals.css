@@ -667,48 +667,63 @@ body[data-class-theme="kita5"] {
 
   /* ── Admin panel ── */
   .admin-card {
-    background: rgba(17, 16, 42, 0.65);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: 14px;
     padding: 24px;
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+  .dark .admin-card {
+    background: rgba(17, 16, 42, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: none;
   }
   .admin-card h2 {
     font-size: 1rem;
     font-weight: 700;
-    color: #f1f5f9;
+    color: var(--foreground);
     margin-bottom: 16px;
   }
 
   .form-row { display: flex; gap: 12px; flex-wrap: wrap; }
   .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 160px; }
-  .form-group label { font-size: 0.8rem; color: #94a3b8; }
+  .form-group label { font-size: 0.8rem; color: var(--muted-foreground); }
   .form-group input,
   .form-group select,
   .form-group textarea {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 8px;
     padding: 8px 12px;
-    color: #e2e8f0;
+    color: var(--foreground);
     font-size: 0.88rem;
     font-family: inherit;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, background 0.2s;
     width: 100%;
+  }
+  .dark .form-group input,
+  .dark .form-group select,
+  .dark .form-group textarea {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #e2e8f0;
   }
   .form-group input:focus,
   .form-group select:focus,
-  .form-group textarea:focus { border-color: rgba(124,58,237,0.6); }
+  .form-group textarea:focus { border-color: rgba(124, 58, 237, 0.6); }
   .form-group textarea { min-height: 72px; resize: vertical; }
-  .form-group select option { background: #1a1735; }
+  .form-group select option { background: var(--card); color: var(--card-foreground); }
+  .dark .form-group select option { background: #1a1735; color: #e2e8f0; }
 
   .form-check { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
   .form-check input { accent-color: #7c3aed; width: 15px; height: 15px; cursor: pointer; }
-  .form-check label { font-size: 0.85rem; color: #94a3b8; cursor: pointer; }
+  .form-check label { font-size: 0.85rem; color: var(--muted-foreground); cursor: pointer; }
 
   .btn-primary {
-    background: rgba(124,58,237,0.75);
+    background: rgba(124, 58, 237, 0.85);
     color: white;
     border: none;
     padding: 8px 20px;
@@ -719,38 +734,51 @@ body[data-class-theme="kita5"] {
     font-family: inherit;
     transition: background 0.2s;
   }
-  .btn-primary:hover:not(:disabled) { background: rgba(124,58,237,1); }
+  .btn-primary:hover:not(:disabled) { background: rgba(124, 58, 237, 1); }
   .btn-primary:disabled { opacity: 0.45; cursor: default; }
 
-  .btn-edit   { background: rgba(59,130,246,0.18); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; transition: background 0.15s; }
-  .btn-danger { background: rgba(239,68,68,0.15);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.3);  padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; transition: background 0.15s; }
-  .btn-save   { background: rgba(52,211,153,0.15); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.3); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
-  .btn-cancel { background: rgba(255,255,255,0.06); color: #94a3b8; border: 1px solid rgba(255,255,255,0.12); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
-  .btn-warning { background: rgba(245,158,11,0.18); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; transition: background 0.15s; }
-  .btn-warning:hover { background: rgba(245,158,11,0.3); }
-  .btn-edit:hover   { background: rgba(59,130,246,0.3); }
-  .btn-danger:hover { background: rgba(239,68,68,0.28); }
+  .btn-edit   { background: rgba(59,130,246,0.12); color: #2563eb; border: 1px solid rgba(59,130,246,0.25); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+  .dark .btn-edit { background: rgba(59,130,246,0.18); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+  .btn-danger { background: rgba(239,68,68,0.12);  color: #dc2626; border: 1px solid rgba(239,68,68,0.25);  padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+  .dark .btn-danger { background: rgba(239,68,68,0.15);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+  .btn-save   { background: rgba(16,185,129,0.15); color: #059669; border: 1px solid rgba(16,185,129,0.3); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
+  .dark .btn-save { background: rgba(52,211,153,0.15); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.3); }
+  .btn-cancel { background: rgba(0,0,0,0.05); color: var(--muted-foreground); border: 1px solid rgba(0,0,0,0.1); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; }
+  .dark .btn-cancel { background: rgba(255,255,255,0.06); color: #94a3b8; border: 1px solid rgba(255,255,255,0.12); }
+  .btn-warning { background: rgba(245,158,11,0.12); color: #d97706; border: 1px solid rgba(245,158,11,0.25); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+  .dark .btn-warning { background: rgba(245,158,11,0.18); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+  .btn-warning:hover { background: rgba(245,158,11,0.22); }
+  .dark .btn-warning:hover { background: rgba(245,158,11,0.3); }
+  .btn-edit:hover   { background: rgba(59,130,246,0.2); }
+  .dark .btn-edit:hover { background: rgba(59,130,246,0.3); }
+  .btn-danger:hover { background: rgba(239,68,68,0.2); }
+  .dark .btn-danger:hover { background: rgba(239,68,68,0.28); }
 
   .admin-table-wrapper { overflow-x: auto; border-radius: 10px; }
   .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  .admin-table th { text-align: right; color: #64748b; font-weight: 600; font-size: 0.78rem; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap; }
-  .admin-table td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #e2e8f0; vertical-align: middle; }
+  .admin-table th { text-align: right; color: var(--muted-foreground); font-weight: 600; font-size: 0.78rem; padding: 8px 12px; border-bottom: 1px solid var(--card-border); white-space: nowrap; }
+  .admin-table td { padding: 10px 12px; border-bottom: 1px solid var(--card-border); color: var(--foreground); vertical-align: middle; }
   .admin-table tr:last-child td { border-bottom: none; }
-  .admin-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .admin-table tr:hover td { background: var(--table-hover-bg); }
   .admin-table .cell-trunc { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .admin-table .cell-nowrap { white-space: nowrap; }
-  .admin-table .cell-dim { color: #64748b; font-size: 0.82em; }
+  .admin-table .cell-dim { color: var(--muted-foreground); font-size: 0.82em; }
 
   .inline-input {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(124,58,237,0.4);
+    background: rgba(0,0,0,0.04);
+    border: 1px solid rgba(124,58,237,0.3);
     border-radius: 6px;
     padding: 5px 8px;
-    color: #e2e8f0;
+    color: var(--foreground);
     font-size: 0.83rem;
     font-family: inherit;
     outline: none;
     width: 100%;
+  }
+  .dark .inline-input {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(124,58,237,0.4);
+    color: #e2e8f0;
   }
   textarea.inline-input { min-height: 56px; resize: vertical; }
 
@@ -758,12 +786,17 @@ body[data-class-theme="kita5"] {
     display: inline-block;
     font-size: 0.7rem;
     font-weight: 700;
-    color: #fca5a5;
-    background: rgba(239,68,68,0.15);
-    border: 1px solid rgba(239,68,68,0.3);
+    color: #ef4444;
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.25);
     border-radius: 20px;
     padding: 1px 8px;
     margin-left: 6px;
+  }
+  .dark .important-badge {
+    color: #fca5a5;
+    background: rgba(239,68,68,0.15);
+    border-color: rgba(239,68,68,0.3);
   }
 
   /* ── Admin seating editor ── */
@@ -778,7 +811,7 @@ body[data-class-theme="kita5"] {
     width: 52px;
     flex-shrink: 0;
     font-size: 0.72rem;
-    color: #475569;
+    color: var(--muted-foreground);
     font-weight: 600;
     text-align: center;
   }
@@ -786,11 +819,15 @@ body[data-class-theme="kita5"] {
   .admin-desk {
     display: flex;
     gap: 3px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.08);
     border-radius: 10px;
     padding: 4px;
     flex: 1;
+  }
+  .dark .admin-desk {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.07);
   }
   .admin-seat {
     flex: 1;
@@ -804,12 +841,17 @@ body[data-class-theme="kita5"] {
     min-width: 0;
   }
   .admin-seat-occupied {
-    background: rgba(96,165,250,0.12);
-    border: 1px solid rgba(96,165,250,0.25);
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
     cursor: grab;
     user-select: none;
   }
-  .admin-seat-occupied:hover { background: rgba(96,165,250,0.2); }
+  .admin-seat-occupied:hover { background: rgba(59,130,246,0.2); }
+  .dark .admin-seat-occupied {
+    background: rgba(96,165,250,0.12);
+    border: 1px solid rgba(96,165,250,0.25);
+  }
+  .dark .admin-seat-occupied:hover { background: rgba(96,165,250,0.2); }
   .admin-seat-occupied.dragging { opacity: 0.35; cursor: grabbing; }
   .admin-seat-occupied.drag-over {
     background: rgba(124,58,237,0.28);
@@ -818,10 +860,14 @@ body[data-class-theme="kita5"] {
   }
   .admin-seat-empty {
     background: transparent;
-    border: 1px dashed rgba(255,255,255,0.1);
+    border: 1px dashed rgba(0,0,0,0.15);
     cursor: pointer;
   }
-  .admin-seat-empty:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.2); }
+  .dark .admin-seat-empty {
+    border-color: rgba(255,255,255,0.1);
+  }
+  .admin-seat-empty:hover { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.25); }
+  .dark .admin-seat-empty:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.2); }
   .admin-seat-empty.drag-over {
     background: rgba(52,211,153,0.15);
     outline: 2px solid rgba(52,211,153,0.5);
@@ -836,13 +882,14 @@ body[data-class-theme="kita5"] {
   }
   .admin-seat-name {
     font-size: 0.78rem;
-    color: #e2e8f0;
+    color: var(--foreground);
     text-align: center;
     padding: 0 18px 0 4px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     line-height: 1.2;
+    font-weight: 500;
   }
   .admin-seat-remove {
     position: absolute;
@@ -850,7 +897,7 @@ body[data-class-theme="kita5"] {
     left: 3px;
     background: none;
     border: none;
-    color: #64748b;
+    color: var(--muted-foreground);
     font-size: 0.85rem;
     cursor: pointer;
     line-height: 1;
@@ -858,30 +905,34 @@ body[data-class-theme="kita5"] {
     font-family: inherit;
     transition: color 0.15s;
   }
-  .admin-seat-remove:hover { color: #f87171; }
-  .admin-seat-plus { font-size: 1.1rem; color: #334155; font-weight: 300; transition: color 0.15s; }
-  .admin-seat-empty:hover .admin-seat-plus { color: #94a3b8; }
+  .admin-seat-remove:hover { color: #ef4444; }
+  .admin-seat-plus { font-size: 1.1rem; color: var(--muted-foreground); opacity: 0.6; font-weight: 300; transition: color 0.15s, opacity 0.15s; }
+  .admin-seat-empty:hover .admin-seat-plus { opacity: 1; color: var(--foreground); }
   .admin-seat-input {
     flex: 1;
     background: none;
     border: none;
     outline: none;
-    color: #e2e8f0;
+    color: var(--foreground);
     font-size: 0.78rem;
     font-family: inherit;
     text-align: center;
     min-width: 0;
   }
   .admin-seat-confirm {
-    background: rgba(52,211,153,0.2);
+    background: rgba(16,185,129,0.2);
     border: none;
-    color: #6ee7b7;
+    color: #059669;
     border-radius: 5px;
     padding: 2px 6px;
     font-size: 0.75rem;
     cursor: pointer;
     font-family: inherit;
     flex-shrink: 0;
+  }
+  .dark .admin-seat-confirm {
+    background: rgba(52,211,153,0.2);
+    color: #6ee7b7;
   }
   .admin-seating-footer {
     display: flex;
@@ -897,11 +948,14 @@ body[data-class-theme="kita5"] {
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    border: 2px solid rgba(255,255,255,0.12);
+    border: 2px solid rgba(0,0,0,0.12);
     font-size: 0.72rem;
     font-weight: 600;
-    color: #475569;
+    color: var(--muted-foreground);
     letter-spacing: 0.1em;
+  }
+  .dark .admin-seating-board {
+    border-color: rgba(255,255,255,0.12);
   }
   .admin-seating-door {
     width: 48px;
@@ -910,9 +964,12 @@ body[data-class-theme="kita5"] {
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.07);
+    border: 1px solid rgba(0,0,0,0.08);
     font-size: 0.68rem;
-    color: #334155;
+    color: var(--muted-foreground);
+  }
+  .dark .admin-seating-door {
+    border-color: rgba(255,255,255,0.07);
   }
 
   /* ── Admin schedule editor ── */
@@ -921,8 +978,8 @@ body[data-class-theme="kita5"] {
   .admin-palette {
     width: 155px;
     flex-shrink: 0;
-    background: rgba(17,16,42,0.7);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: 14px;
     padding: 14px;
     display: flex;
@@ -930,16 +987,22 @@ body[data-class-theme="kita5"] {
     gap: 10px;
     position: sticky;
     top: 72px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.04);
   }
-  .admin-palette-title { font-size: 0.72rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.07em; }
+  .dark .admin-palette {
+    background: rgba(17,16,42,0.7);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: none;
+  }
+  .admin-palette-title { font-size: 0.72rem; font-weight: 700; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.07em; }
 
   .admin-palette-list { display: flex; flex-direction: column; gap: 5px; max-height: 340px; overflow-y: auto; }
   .admin-palette-row { display: flex; align-items: center; gap: 5px; }
   .admin-palette-chip {
     flex: 1;
-    background: rgba(124,58,237,0.18);
-    border: 1px solid rgba(124,58,237,0.32);
-    color: #c4b5fd;
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.25);
+    color: #6d28d9;
     border-radius: 7px;
     padding: 5px 8px;
     font-size: 0.8rem;
@@ -948,17 +1011,24 @@ body[data-class-theme="kita5"] {
     text-align: center;
     transition: background 0.15s, opacity 0.15s;
     font-family: inherit;
+    font-weight: 500;
   }
-  .admin-palette-chip:hover { background: rgba(124,58,237,0.32); }
+  .dark .admin-palette-chip {
+    background: rgba(124,58,237,0.18);
+    border-color: rgba(124,58,237,0.32);
+    color: #c4b5fd;
+  }
+  .admin-palette-chip:hover { background: rgba(124,58,237,0.22); }
+  .dark .admin-palette-chip:hover { background: rgba(124,58,237,0.32); }
   .admin-palette-chip.dragging { opacity: 0.35; cursor: grabbing; }
 
-  .admin-palette-remove { color: #475569; background: none; border: none; cursor: pointer; font-size: 1rem; line-height: 1; padding: 2px 3px; border-radius: 4px; font-family: inherit; transition: color 0.15s; }
-  .admin-palette-remove:hover { color: #f87171; }
+  .admin-palette-remove { color: var(--muted-foreground); background: none; border: none; cursor: pointer; font-size: 1rem; line-height: 1; padding: 2px 3px; border-radius: 4px; font-family: inherit; transition: color 0.15s; }
+  .admin-palette-remove:hover { color: #ef4444; }
 
   .admin-palette-clear {
     background: rgba(239,68,68,0.1);
-    border: 1px dashed rgba(239,68,68,0.3);
-    color: #fca5a5;
+    border: 1px dashed rgba(239,68,68,0.25);
+    color: #dc2626;
     border-radius: 7px;
     padding: 5px 8px;
     font-size: 0.78rem;
@@ -967,45 +1037,57 @@ body[data-class-theme="kita5"] {
     text-align: center;
     transition: background 0.15s, opacity 0.15s;
   }
-  .admin-palette-clear:hover { background: rgba(239,68,68,0.2); }
+  .dark .admin-palette-clear {
+    border-color: rgba(239,68,68,0.3);
+    color: #fca5a5;
+  }
+  .admin-palette-clear:hover { background: rgba(239,68,68,0.18); }
   .admin-palette-clear.dragging { opacity: 0.35; cursor: grabbing; }
 
-  .admin-palette-add { display: flex; flex-direction: column; gap: 5px; border-top: 1px solid rgba(255,255,255,0.07); padding-top: 10px; }
+  .admin-palette-add { display: flex; flex-direction: column; gap: 5px; border-top: 1px solid var(--card-border); padding-top: 10px; }
   .admin-palette-add input {
     width: 100%;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.1);
     border-radius: 7px;
     padding: 6px 8px;
-    color: #e2e8f0;
+    color: var(--foreground);
     font-size: 0.8rem;
     font-family: inherit;
     outline: none;
     box-sizing: border-box;
+  }
+  .dark .admin-palette-add input {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.1);
+    color: #e2e8f0;
   }
   .admin-palette-add input:focus { border-color: rgba(124,58,237,0.5); }
 
   /* Admin schedule table */
   .admin-sched-wrap { flex: 1; overflow-x: auto; }
   .admin-sched-table { border-collapse: collapse; font-size: 0.85rem; width: 100%; }
-  .admin-sched-table th { text-align: center; color: #475569; font-size: 0.75rem; font-weight: 600; padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); white-space: nowrap; }
-  .admin-sched-table td { border-bottom: 1px solid rgba(255,255,255,0.05); }
-  .sched-period { font-weight: 700; color: #60a5fa; text-align: center; padding: 8px 6px; white-space: nowrap; }
-  .sched-time { color: #475569; font-size: 0.75rem; text-align: center; padding: 8px 4px; white-space: nowrap; }
+  .admin-sched-table th { text-align: center; color: var(--muted-foreground); font-size: 0.75rem; font-weight: 600; padding: 8px 6px; border-bottom: 1px solid var(--card-border); white-space: nowrap; }
+  .admin-sched-table td { border-bottom: 1px solid var(--card-border); }
+  .sched-period { font-weight: 700; color: #2563eb; text-align: center; padding: 8px 6px; white-space: nowrap; }
+  .dark .sched-period { color: #60a5fa; }
+  .sched-time { color: var(--muted-foreground); font-size: 0.75rem; text-align: center; padding: 8px 4px; white-space: nowrap; }
   .sched-drop-cell {
     text-align: center;
     padding: 6px 4px;
     min-width: 76px;
     height: 40px;
     font-size: 0.82rem;
-    color: #e2e8f0;
+    color: var(--foreground);
     transition: background 0.1s;
     cursor: default;
     position: relative;
+    font-weight: 500;
   }
-  .sched-drop-empty { color: #1e293b; }
-  .sched-drop-over { background: rgba(124,58,237,0.22); outline: 2px solid rgba(124,58,237,0.6); outline-offset: -2px; border-radius: 4px; }
-  .sched-break td { text-align: center; padding: 4px 6px; font-size: 0.76rem; color: #334155; background: rgba(255,255,255,0.02); }
+  .sched-drop-empty { color: var(--muted-foreground); opacity: 0.35; }
+  .sched-drop-over { background: rgba(124,58,237,0.18); outline: 2px solid rgba(124,58,237,0.6); outline-offset: -2px; border-radius: 4px; }
+  .sched-break td { text-align: center; padding: 4px 6px; font-size: 0.76rem; color: var(--muted-foreground); background: rgba(0,0,0,0.02); }
+  .dark .sched-break td { background: rgba(255,255,255,0.02); }
 
   /* ── Geometric background ── */
   .geo-bg {

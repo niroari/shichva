@@ -169,14 +169,13 @@ export default function AdminUsers({ classId }: Props) {
         </div>
 
         <div
-          className="flex rounded-xl p-1 self-start"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+          className="flex rounded-xl p-1 self-start bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10"
         >
           <button
             onClick={() => setActiveSubTab("pending")}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
               activeSubTab === "pending"
-                ? "bg-violet-600/40 text-violet-200 border border-violet-500/30"
+                ? "bg-violet-500/15 text-violet-800 dark:bg-violet-600/40 dark:text-violet-200 border border-violet-500/30 font-semibold"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -192,7 +191,7 @@ export default function AdminUsers({ classId }: Props) {
             onClick={() => setActiveSubTab("approved")}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
               activeSubTab === "approved"
-                ? "bg-violet-600/40 text-violet-200 border border-violet-500/30"
+                ? "bg-violet-500/15 text-violet-800 dark:bg-violet-600/40 dark:text-violet-200 border border-violet-500/30 font-semibold"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -203,7 +202,7 @@ export default function AdminUsers({ classId }: Props) {
             onClick={() => setActiveSubTab("whitelist")}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
               activeSubTab === "whitelist"
-                ? "bg-violet-600/40 text-violet-200 border border-violet-500/30"
+                ? "bg-violet-500/15 text-violet-800 dark:bg-violet-600/40 dark:text-violet-200 border border-violet-500/30 font-semibold"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -299,21 +298,13 @@ export default function AdminUsers({ classId }: Props) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="חיפוש לפי שם, אימייל או שם תלמיד..."
-              className="flex-1 rounded-xl px-3.5 py-2 text-xs text-foreground outline-none"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.12)",
-              }}
+              className="flex-1 rounded-xl px-3.5 py-2 text-xs text-foreground bg-black/[0.03] dark:bg-white/[0.06] border border-black/15 dark:border-white/12 focus:border-violet-500 outline-none transition-all"
             />
 
             <select
               value={filterRole}
               onChange={(e) => setFilterRole(e.target.value)}
-              className="rounded-xl px-3 py-2 text-xs text-foreground outline-none cursor-pointer"
-              style={{
-                background: "rgba(20,20,35,0.9)",
-                border: "1px solid rgba(255,255,255,0.12)",
-              }}
+              className="rounded-xl px-3 py-2 text-xs text-foreground bg-white dark:bg-[#141423] border border-black/15 dark:border-white/12 focus:border-violet-500 outline-none cursor-pointer transition-all"
             >
               <option value="all">כל התפקידים</option>
               <option value="student">תלמידים בלבד</option>
@@ -437,11 +428,7 @@ export default function AdminUsers({ classId }: Props) {
               value={newWhitelistInput}
               onChange={(e) => setNewWhitelistInput(e.target.value)}
               placeholder="student1@school.org.il, parent@gmail.com, ..."
-              className="w-full rounded-xl p-3 text-xs font-mono text-foreground outline-none resize-none"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.12)",
-              }}
+              className="w-full rounded-xl p-3 text-xs font-mono text-foreground bg-black/[0.03] dark:bg-white/[0.06] border border-black/15 dark:border-white/12 focus:border-violet-500 outline-none resize-none transition-all"
               dir="ltr"
             />
 
@@ -474,11 +461,7 @@ export default function AdminUsers({ classId }: Props) {
                 {whitelistEmails.map((email) => (
                   <div
                     key={email}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono"
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                    }}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono bg-black/[0.04] dark:bg-white/[0.05] border border-black/10 dark:border-white/10 text-foreground"
                     dir="ltr"
                   >
                     <span>{email}</span>

@@ -169,11 +169,7 @@ export default function AdminSettings({ classId }: Props) {
               onChange={(e) => setClassName(e.target.value)}
               placeholder="לדוגמה: כיתה ח׳2 או כיתה ט׳1"
               required
-              className="w-full rounded-xl px-4 py-2.5 text-sm text-foreground outline-none transition-all"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.12)",
-              }}
+              className="w-full rounded-xl px-4 py-2.5 text-sm text-foreground bg-black/[0.03] dark:bg-white/[0.06] border border-black/15 dark:border-white/12 focus:border-violet-500 outline-none transition-all"
             />
             <span className="text-xs text-muted-foreground">יוצג ככותרת הראשית בדף הכיתה.</span>
           </div>
@@ -186,11 +182,7 @@ export default function AdminSettings({ classId }: Props) {
               onChange={(e) => setSchoolName(e.target.value)}
               placeholder="לדוגמה: חטיבת הביניים בן גוריון הרצליה"
               required
-              className="w-full rounded-xl px-4 py-2.5 text-sm text-foreground outline-none transition-all"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.12)",
-              }}
+              className="w-full rounded-xl px-4 py-2.5 text-sm text-foreground bg-black/[0.03] dark:bg-white/[0.06] border border-black/15 dark:border-white/12 focus:border-violet-500 outline-none transition-all"
             />
             <span className="text-xs text-muted-foreground">מופיע מעל שם הכיתה בכותרת העליונה.</span>
           </div>
@@ -221,12 +213,12 @@ export default function AdminSettings({ classId }: Props) {
                 onChange={(e) => setNotifyOnRegistration(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600" />
+              <div className="w-11 h-6 bg-black/10 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600" />
             </label>
           </div>
 
           {notifyOnRegistration && (
-            <div className="space-y-4 pt-3 border-t border-white/10 animate-in fade-in duration-200">
+            <div className="space-y-4 pt-3 border-t border-black/10 dark:border-white/10 animate-in fade-in duration-200">
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-foreground">
                   כתובת מייל לקבלת ההתראות (למשל: מייל המחנך/ת)
@@ -238,18 +230,14 @@ export default function AdminSettings({ classId }: Props) {
                     onChange={(e) => setNotificationEmail(e.target.value)}
                     placeholder="teacher@gmail.com"
                     required={notifyOnRegistration}
-                    className="flex-1 rounded-xl px-4 py-2.5 text-sm text-foreground outline-none transition-all"
-                    style={{
-                      background: "rgba(255,255,255,0.06)",
-                      border: "1px solid rgba(255,255,255,0.12)",
-                    }}
+                    className="flex-1 rounded-xl px-4 py-2.5 text-sm text-foreground bg-black/[0.03] dark:bg-white/[0.06] border border-black/15 dark:border-white/12 focus:border-violet-500 outline-none transition-all"
                     dir="ltr"
                   />
                   <button
                     type="button"
                     onClick={handleSendTestEmail}
                     disabled={testingEmail || !notificationEmail}
-                    className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-foreground border border-white/10 transition-all cursor-pointer disabled:opacity-40 shrink-0"
+                    className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15 text-foreground border border-black/10 dark:border-white/10 transition-all cursor-pointer disabled:opacity-40 shrink-0"
                   >
                     {testingEmail ? "שולח בדיקה..." : "✉️ שלח מייל בדיקה"}
                   </button>
@@ -263,8 +251,8 @@ export default function AdminSettings({ classId }: Props) {
                 <div
                   className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
                     testEmailStatus.type === "success"
-                      ? "bg-emerald-500/10 border border-emerald-500/25 text-emerald-300"
-                      : "bg-red-500/10 border border-red-500/25 text-red-300"
+                      ? "bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 dark:text-emerald-300"
+                      : "bg-red-500/10 border border-red-500/25 text-red-600 dark:text-red-300"
                   }`}
                 >
                   <span>{testEmailStatus.type === "success" ? "✓" : "⚠️"}</span>
@@ -300,11 +288,11 @@ export default function AdminSettings({ classId }: Props) {
                   key={opt.id}
                   onClick={() => setTheme(opt.id)}
                   className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all cursor-pointer ${
-                    isSelected ? "ring-2 ring-offset-2 ring-offset-background" : "hover:bg-white/5 opacity-80 hover:opacity-100"
+                    isSelected ? "ring-2 ring-offset-2 ring-offset-background" : "hover:bg-black/5 dark:hover:bg-white/5 opacity-80 hover:opacity-100"
                   }`}
                   style={{
-                    backgroundColor: isSelected ? opt.bg : "rgba(255,255,255,0.03)",
-                    borderColor: isSelected ? opt.border : "rgba(255,255,255,0.1)",
+                    backgroundColor: isSelected ? opt.bg : "transparent",
+                    borderColor: isSelected ? opt.border : "var(--card-border)",
                     outlineColor: opt.color,
                   }}
                 >

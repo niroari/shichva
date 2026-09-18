@@ -133,9 +133,9 @@ export default function HomePage() {
 
           <Gallery classId={classId} />
 
-          <section id="links" className="py-16 border-t border-white/10">
+          <section id="links" className="py-16 border-t border-black/10 dark:border-white/10">
             <h2 className="text-2xl font-bold text-foreground mb-6">קישורים חשובים</h2>
-            <QuickLinks />
+            <QuickLinks classId={classId} />
           </section>
         </main>
       </AuthGate>
