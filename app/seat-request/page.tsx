@@ -19,6 +19,7 @@ interface SurveyResponse {
 function SeatRequestContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || searchParams.get("t") || "";
+  const classId = searchParams.get("classId") || "";
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -41,7 +42,8 @@ function SeatRequestContent() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`/api/seating-request?token=${encodeURIComponent(token)}`);
+        const classQuery = classId ? `&classId=${encodeURIComponent(classId)}` : "";
+        const res = await fetch(`/api/seating-request?token=${encodeURIComponent(token)}${classQuery}`);
         const data = await res.json();
 
         if (!res.ok) {
@@ -62,7 +64,7 @@ function SeatRequestContent() {
     }
 
     fetchSurvey();
-  }, [token]);
+  }, [token, classId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +85,7 @@ function SeatRequestContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           token,
+          classId: classId || undefined,
           choice1,
           choice2,
           note,

@@ -187,7 +187,8 @@ export default function AdminSeatingSurveyModal({
 
   const getStudentLink = (token: string) => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    return `${origin}/seat-request?token=${token}`;
+    const classParam = classId ? `&classId=${encodeURIComponent(classId)}` : "";
+    return `${origin}/seat-request?token=${token}${classParam}`;
   };
 
   const getWhatsAppMessage = (name: string, token: string) => {
