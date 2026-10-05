@@ -2,6 +2,63 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users/{userId}
+    // Fields:
+    //   - uid: string (required, must match userId, immutable)
+    //   - email: string (required, valid email, max 100 chars)
+    //   - fullName: string (required, 1-100 chars)
+    //   - role: string (required, 'student' | 'parent' | 'admin', immutable by non-admin)
+    //   - studentName: string (optional, 0-100 chars)
+    //   - status: string (required, 'pending' | 'approved' | 'rejected', immutable by non-admin)
+    //   - createdAt: string (required, ISO date string, max 50 chars, immutable)
+    //   - approvedAt: string (optional, max 50 chars)
+    //   - approvedBy: string (optional, max 50 chars)
+    //
+    // Document: classes/{classId}/meta/settings
+    // Fields:
+    //   - className: string (optional, max 100 chars)
+    //   - schoolName: string (optional, max 100 chars)
+    //   - theme: string (optional, max 50 chars)
+    //   - notifyOnRegistration: bool (optional)
+    //   - notificationEmail: string (optional, max 100 chars)
+    //   - updatedAt: string or timestamp (optional)
+    //
+    // Document: classes/{classId}/meta/whitelist
+    // Fields:
+    //   - emails: list of string (required, max 500 emails)
+    //
+    // Document: classes/{classId}/meta/students
+    // Fields:
+    //   - list: list of string (required, max 150 student names)
+    //
+    // Document: classes/{classId}/meta/seating_survey
+    // Fields:
+    //   - isActive: bool (required)
+    //   - title: string (optional, max 100 chars)
+    //   - updatedAt: string (required, max 50 chars)
+    //   - requests: map of SeatingRequestItem (required, max 150 entries)
+    //     Each request entry contains:
+    //       - token: string (required, max 50 chars, immutable by student)
+    //       - studentName: string (required, max 100 chars, immutable by student)
+    //       - eligible: bool (required, immutable by student, must be true to submit)
+    //       - createdAt: string (required, max 50 chars, immutable by student)
+    //       - choice1: string (required on submit, 1-100 chars)
+    //       - choice2: string (optional, 0-100 chars)
+    //       - note: string (optional, 0-500 chars)
+    //       - submittedAt: string (optional, max 50 chars)
+    //
+    // Collection: classes/{classId}/{document=**}
+    // Protected content (announcements, schedule, events, seating, gallery, teachers, links, etc.)
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -10,49 +67,155 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    function hasUserDoc() {
+      return isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
+    function isAdmin() {
+      return hasUserDoc() && getUserData().role == 'admin';
+    }
+
     function isApprovedOrAdmin() {
-      return isAuthenticated() && (
-        !exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
-        getUserData().status == 'approved' ||
-        getUserData().role == 'admin'
+      return hasUserDoc() && (
+        getUserData().role == 'admin' ||
+        getUserData().status == 'approved'
       );
     }
 
-    function isAdmin() {
-      return isAuthenticated() && (
-        !exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
-        getUserData().role == 'admin'
-      );
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
     }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.size() > 0 &&
+        email.size() <= 100 &&
+        email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$');
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUserDoc(data) {
+      return data.keys().hasOnly(['uid', 'email', 'fullName', 'role', 'studentName', 'status', 'createdAt', 'approvedAt', 'approvedBy']) &&
+        data.uid is string &&
+        data.email is string &&
+        isValidEmail(data.email) &&
+        data.fullName is string &&
+        data.fullName.size() > 0 &&
+        data.fullName.size() <= 100 &&
+        data.role in ['student', 'parent', 'admin'] &&
+        (!('studentName' in data) || (data.studentName is string && data.studentName.size() <= 100)) &&
+        data.status in ['pending', 'approved', 'rejected'] &&
+        data.createdAt is string &&
+        data.createdAt.size() <= 50 &&
+        (!('approvedAt' in data) || (data.approvedAt is string && data.approvedAt.size() <= 50)) &&
+        (!('approvedBy' in data) || (data.approvedBy is string && data.approvedBy.size() <= 50));
+    }
+
+    function isValidSettingsDoc(data) {
+      return data.keys().hasOnly(['className', 'schoolName', 'theme', 'notifyOnRegistration', 'notificationEmail', 'updatedAt']) &&
+        (!('className' in data) || (data.className is string && data.className.size() <= 100)) &&
+        (!('schoolName' in data) || (data.schoolName is string && data.schoolName.size() <= 100)) &&
+        (!('theme' in data) || (data.theme is string && data.theme.size() <= 50)) &&
+        (!('notifyOnRegistration' in data) || data.notifyOnRegistration is bool) &&
+        (!('notificationEmail' in data) || (data.notificationEmail is string && data.notificationEmail.size() <= 100));
+    }
+
+    function isValidWhitelistDoc(data) {
+      return data.keys().hasOnly(['emails']) &&
+        data.emails is list &&
+        data.emails.size() <= 500;
+    }
+
+    function isValidStudentsDoc(data) {
+      return data.keys().hasOnly(['list']) &&
+        data.list is list &&
+        data.list.size() <= 150;
+    }
+
+    function isValidAdminSeatingSurvey(data) {
+      return data.keys().hasOnly(['isActive', 'title', 'updatedAt', 'requests']) &&
+        data.isActive is bool &&
+        (!('title' in data) || (data.title is string && data.title.size() <= 100)) &&
+        data.updatedAt is string &&
+        data.updatedAt.size() <= 50 &&
+        data.requests is map &&
+        data.requests.size() <= 150;
+    }
+
+    function isValidStudentSurveyUpdate() {
+      let docDiff = request.resource.data.diff(resource.data);
+      let reqDiff = request.resource.data.requests.diff(resource.data.requests);
+      return resource.data.isActive == true &&
+        request.resource.data.isActive == true &&
+        docDiff.affectedKeys().hasOnly(['requests', 'updatedAt']) &&
+        request.resource.data.updatedAt is string &&
+        request.resource.data.updatedAt.size() <= 50 &&
+        request.resource.data.requests is map &&
+        resource.data.requests is map &&
+        request.resource.data.requests.size() <= 150 &&
+        reqDiff.addedKeys().size() == 0 &&
+        reqDiff.removedKeys().size() == 0 &&
+        reqDiff.affectedKeys().size() <= 1;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
 
     // User management collection
     match /users/{userId} {
-      // Any authenticated user can read their own profile, or admins can read/list all profiles
       allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-      // Users can create/update their own initial profile during registration
-      allow create: if isUserDoc(userId);
-      // Only admins or the user themselves can update their details (admins can approve/reject)
-      allow update: if isUserDoc(userId) || isAdmin();
-      // Only admins can delete user records
+      // On create, user can register their own profile with student or parent role (or admin can create any)
+      allow create: if isUserDoc(userId) && isValidUserDoc(request.resource.data) &&
+        (request.resource.data.role in ['student', 'parent'] || isAdmin());
+      // On update, users can update their profile but cannot change their role, status, uid, or createdAt unless admin
+      allow update: if isValidUserDoc(request.resource.data) && (
+        (isUserDoc(userId) && areImmutableFieldsUnchanged(['role', 'status', 'uid', 'createdAt'])) ||
+        isAdmin()
+      );
       allow delete: if isAdmin();
     }
 
-    // Class meta (settings / whitelist)
+    // Class meta: Settings (Public read for theme & school branding on login screen)
     match /classes/{classId}/meta/settings {
-      allow read: if true; // Public for theme & school branding on login screen
-      allow write: if isAdmin();
+      allow read: if true;
+      allow create: if isAdmin() && isValidSettingsDoc(request.resource.data);
+      allow update: if isAdmin() && isValidSettingsDoc(request.resource.data);
+      allow delete: if isAdmin();
     }
 
+    // Class meta: Whitelist (Authenticated users check whitelist upon sign up)
     match /classes/{classId}/meta/whitelist {
-      allow read: if isAuthenticated(); // To check whitelist upon sign up
-      allow write: if isAdmin();
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() && isValidWhitelistDoc(request.resource.data);
+      allow update: if isAdmin() && isValidWhitelistDoc(request.resource.data);
+      allow delete: if isAdmin();
     }
 
-    // Protected class content (announcements, schedule, events, seating, gallery, teachers)
+    // Class meta: Student Roster (Public read for seating survey dropdown; admin managed)
+    match /classes/{classId}/meta/students {
+      allow read: if true;
+      allow create: if isAdmin() && isValidStudentsDoc(request.resource.data);
+      allow update: if isAdmin() && isValidStudentsDoc(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Class meta: Seating Survey (Public read to check isActive and token; student self-submission update; admin full control)
+    match /classes/{classId}/meta/seating_survey {
+      allow read: if true;
+      allow create: if isAdmin() && isValidAdminSeatingSurvey(request.resource.data);
+      allow update: if (isAdmin() && isValidAdminSeatingSurvey(request.resource.data)) || isValidStudentSurveyUpdate();
+      allow delete: if isAdmin();
+    }
+
+    // Protected class content (announcements, schedule, events, seating, gallery, teachers, links, subjects, emergency, etc.)
     match /classes/{classId}/{document=**} {
       allow read: if isApprovedOrAdmin();
       allow write: if isAdmin();
