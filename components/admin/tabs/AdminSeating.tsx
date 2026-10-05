@@ -15,6 +15,9 @@ import {
   addDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import AdminSeatingSurveyModal from "@/components/admin/tabs/AdminSeatingSurveyModal";
+import { generateAutoSeating } from "@/lib/seatingAlgorithm";
+import { SeatingRequestItem, SeatingSurveyMeta } from "@/types/seating-request";
 
 type SeatField =
   | "desk1_right" | "desk1_left"
@@ -76,6 +79,10 @@ export default function AdminSeating({ classId }: Props) {
   const [addingName, setAddingName] = useState("");
   const addInputRef = useRef<HTMLInputElement>(null);
 
+  // ── Seating Survey state ──
+  const [surveyModalOpen, setSurveyModalOpen] = useState(false);
+  const [surveyRequests, setSurveyRequests] = useState<Record<string, SeatingRequestItem>>({});
+
   // ── Load seating (real-time) ──
   useEffect(() => {
     const q = query(
@@ -85,6 +92,16 @@ export default function AdminSeating({ classId }: Props) {
     return onSnapshot(q, (snap) => {
       setRows(snap.docs.map((d) => ({ id: d.id, ...d.data() } as SeatingRow)));
       setLoading(false);
+    });
+  }, [classId]);
+
+  // ── Load seating survey meta ──
+  useEffect(() => {
+    return onSnapshot(doc(db, "classes", classId, "meta", "seating_survey"), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data() as SeatingSurveyMeta;
+        setSurveyRequests(data.requests || {});
+      }
     });
   }, [classId]);
 
@@ -295,6 +312,42 @@ export default function AdminSeating({ classId }: Props) {
     await batch.commit();
   }
 
+  const submittedSurveyCount = useMemo(() => {
+    return Object.values(surveyRequests).filter((r) => r.eligible && r.choice1).length;
+  }, [surveyRequests]);
+
+  async function applyAutoSeating(requestsToApply?: Record<string, SeatingRequestItem>) {
+    const reqs = requestsToApply || surveyRequests;
+    const reqCount = Object.values(reqs).filter((r) => r.eligible && r.choice1).length;
+
+    if (reqCount === 0) {
+      alert("טרם התקבלו בקשות מתלמידים זכאים בסקר.");
+      return;
+    }
+
+    const result = generateAutoSeating(rows, roster, reqs);
+
+    const confirmMsg = `האלגוריתם סידר מקומות ישיבה:\n• ${result.mutualPairsCount} זוגות בהתאמה הדדית (בחרו זה את זה)\n• ${result.oneWayCount} תלמידים שובצו לפי בקשה אישית\n• ${result.totalPlaced} סה"כ תלמידים שובצו בכיתה\n\nהאם להחיל את הסידור על הלוח כעת? (תוכל/י להמשיך לגרור ולערוך ידנית לאחר מכן)`;
+
+    if (!confirm(confirmMsg)) return;
+
+    const batch = writeBatch(db);
+    result.updatedRows.forEach((row) => {
+      batch.update(doc(db, "classes", classId, "seating", row.id), {
+        desk1_right: row.desk1_right,
+        desk1_left: row.desk1_left,
+        desk2_right: row.desk2_right,
+        desk2_left: row.desk2_left,
+        desk3_right: row.desk3_right,
+        desk3_left: row.desk3_left,
+        desk4_right: row.desk4_right,
+        desk4_left: row.desk4_left,
+      });
+    });
+
+    await batch.commit();
+  }
+
   async function initializeSeating() {
     const colRef = collection(db, "classes", classId, "seating");
     const emptyRow = { desk1_right: "", desk1_left: "", desk2_right: "", desk2_left: "", desk3_right: "", desk3_left: "", desk4_right: "", desk4_left: "" };
@@ -399,7 +452,31 @@ export default function AdminSeating({ classId }: Props) {
           גרור תלמיד/ה מהרשימה לכיסא פנוי · גרור בין מושבות להחלפה · לחץ × להסרה
         </p>
 
-        <div className="flex justify-center gap-3 mb-6 flex-wrap">
+        <div className="flex justify-center gap-3 mb-6 flex-wrap items-center">
+          <button
+            className="px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+            onClick={() => setSurveyModalOpen(true)}
+          >
+            <span>📋</span>
+            <span>סקר ובקשות תלמידים</span>
+            {submittedSurveyCount > 0 && (
+              <span className="px-1.5 py-0.2 bg-emerald-400 text-black font-bold text-[10px] rounded-full">
+                {submittedSurveyCount}
+              </span>
+            )}
+          </button>
+
+          {submittedSurveyCount > 0 && (
+            <button
+              className="px-3.5 py-2 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 text-violet-700 dark:text-violet-300 border border-violet-500/30 font-semibold text-xs transition-all cursor-pointer flex items-center gap-1.5"
+              onClick={() => applyAutoSeating()}
+              title="סדר את הכיתה אוטומטית לפי הבקשות שהתקבלו"
+            >
+              <span>✨</span>
+              <span>סדר לפי בקשות</span>
+            </button>
+          )}
+
           <button
             className="btn-primary"
             onClick={randomizeSeating}
@@ -544,6 +621,14 @@ export default function AdminSeating({ classId }: Props) {
         </div>
       </div>
     </div>
+
+    <AdminSeatingSurveyModal
+      classId={classId}
+      roster={roster}
+      isOpen={surveyModalOpen}
+      onClose={() => setSurveyModalOpen(false)}
+      onApplyAutoSeating={(reqs) => applyAutoSeating(reqs)}
+    />
     </>
   );
 }
