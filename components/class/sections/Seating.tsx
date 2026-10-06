@@ -19,7 +19,7 @@ function DeskUnit({ v1, v2, delay }: { v1: string; v2: string; delay: number }) 
   const isLidor = v1 === "לידור";
   const isEmpty  = !v1 && !v2;
   const isDouble = !isLidor && Boolean(v1) && Boolean(v2);
-  const numChairs = isDouble ? 2 : 1;
+  const numChairs = isDouble || isEmpty ? 2 : 1;
 
   const unitClass = [
     "desk-unit",
@@ -109,13 +109,19 @@ export default function Seating({ classId }: { classId: string }) {
 
   return (
     <div id="seating-print-area">
-      <div className="flex justify-end mb-3">
-        <button
-          onClick={handlePrint}
-          className="seating-print-btn cursor-pointer active:scale-95"
-        >
-          🖨️ הדפסה
-        </button>
+      <div className="flex justify-between items-center mb-3">
+        <span className="sm:hidden text-xs text-muted-foreground flex items-center gap-1.5 opacity-80 select-none">
+          <span>⟷</span>
+          <span>גללו לצדדים לצפייה בכל הכיתה</span>
+        </span>
+        <div className="flex justify-end flex-1">
+          <button
+            onClick={handlePrint}
+            className="seating-print-btn cursor-pointer active:scale-95"
+          >
+            🖨️ הדפסה
+          </button>
+        </div>
       </div>
     <div ref={classroomRef} className={`classroom${visible ? " visible" : ""}`}>
       <div className="classroom-inner">
